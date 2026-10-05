@@ -229,7 +229,7 @@ static int moving(rf_dsp_t *d, rf_det_t *out, int max_out)
 static int micro(rf_dsp_t *d, rf_det_t *out, int max_out)
 {
     static rf_cpx_t D[W][RF_N_RX][RF_MICRO_BINS];
-    static float slow[RF_MICRO_BINS], fast[RF_MICRO_BINS], Sk[W];
+    static float slow[RF_MICRO_BINS], fast[RF_MICRO_BINS];
     static rf_cpx_t Fk[W][RF_N_RX];
     static float tmp[W];
     const int K0 = d->k_min, K1 = d->k_max;
@@ -401,7 +401,6 @@ static int micro(rf_dsp_t *d, rf_det_t *out, int max_out)
                 Fk[i][rx] = rf_dft_bin(xw, W, 1, (size_t)i);
                 s += cabs2(Fk[i][rx]);
             }
-            Sk[i] = s;
             if (s > fv) {
                 fv = s;
                 fi = i;
