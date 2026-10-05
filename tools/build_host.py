@@ -24,6 +24,7 @@ APP = ["src/app.c"]
 TARGETS = {
     "test_host": (["tests/test_host.c"], CORE),
     "replay": (["tests/replay.c"], CORE + DSP + NN + APP),
+    "test_nn": (["tests/test_nn.c"], NN),
 }
 
 
@@ -60,7 +61,7 @@ def main(argv):
     names = argv or ["test_host"]
     for n in names:
         out = build(n)
-        if n == "test_host":
+        if n in ("test_host", "test_nn"):
             r = subprocess.run([str(out)])
             if r.returncode:
                 raise SystemExit(r.returncode)

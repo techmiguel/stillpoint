@@ -11,48 +11,48 @@
  "test_rooms": [
   "R3"
  ],
- "macro_f1_no_abstenidas": 0.888,
+ "macro_f1_no_abstenidas": 0.904,
  "f1_por_clase": {
-  "standing": 0.918,
-  "sitting": 0.762,
-  "lying": 0.943,
-  "fall": 0.93
+  "standing": 0.922,
+  "sitting": 0.78,
+  "lying": 0.958,
+  "fall": 0.955
  },
- "tasa_abstencion": 0.029,
+ "tasa_abstencion": 0.025,
  "recall_ventanas_caida": {
-  "k": 41,
+  "k": 43,
   "n": 46,
-  "p": 0.891,
+  "p": 0.935,
   "ic95": [
-   0.77,
-   0.953
+   0.825,
+   0.978
   ]
  },
- "acuerdo_int8_vs_float": 0.991,
+ "acuerdo_int8_vs_float": 0.9964,
  "matriz_confusion(filas=verdad)": [
   [
-   238,
-   3,
+   237,
+   4,
    0,
    0
   ],
   [
-   38,
-   79,
+   37,
+   80,
    0,
    0
   ],
   [
    3,
-   12,
-   136,
-   2
+   9,
+   140,
+   1
   ],
   [
+   1,
+   0,
    2,
-   0,
-   3,
-   41
+   43
   ]
  ],
  "clases": [
@@ -61,5 +61,5 @@
   "lying",
   "fall"
  ],
- "tamano_modelo_bytes": 14592
+ "tamano_modelo_bytes": 15984
 }

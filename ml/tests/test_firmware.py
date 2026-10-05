@@ -26,6 +26,11 @@ class FirmwareCoreTest(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
         self.assertIn("OK", r.stdout)
 
+    def test_int8_inference_matches_tflite(self):
+        out = build_host.build("test_nn")
+        r = subprocess.run([str(out)], capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
     def test_dsp_and_tracker_match_python(self):
         sys.path.insert(0, str(ROOT / "ml"))
         import compare_c

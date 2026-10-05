@@ -144,10 +144,12 @@
   9.0
  ],
  "output_quant": [
-  0.00390625,
-  -128.0
+  0.1392858773469925,
+  14.0
  ],
  "p_min": 0.6,
  "window_frames": 20,
- "dataset": "data/synth_v1.npz"
+ "dataset": "data/synth_v1.npz",
+ "output": "logits",
+ "softmax": "float, fuera del modelo"
 }

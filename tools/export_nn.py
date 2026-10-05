@@ -1,0 +1,165 @@
+"""Exporta el modelo int8 a C para firmware/src/nn.c.
+
+Genera:
+  firmware/src/nn_model.h       capas, pesos, multiplicadores en punto fijo, normalización, OOD
+  firmware/tests/nn_vectors.h   ventanas de prueba con los logits int8 esperados (núcleos de
+                                referencia de TFLite, los mismos que usa TFLite Micro)
+
+Los multiplicadores se calculan exactamente como TFLite (QuantizeMultiplier).
+Uso: python tools/export_nn.py [carpeta_artefacto] [conjunto.npz]
+"""
+from __future__ import annotations
+
+import json
+import math
+import sys
+from pathlib import Path
+
+import numpy as np
+
+ROOT = Path(__file__).resolve().parents[1]
+COMPUTE = ("CONV_2D", "MAX_POOL_2D", "AVERAGE_POOL_2D", "FULLY_CONNECTED")
+PASS = ("EXPAND_DIMS", "RESHAPE", "SHAPE", "STRIDED_SLICE", "PACK")
+
+
+def quantize_multiplier(m: float):
+    """tflite::QuantizeMultiplier: m = q * 2^shift, q en Q31, std::round."""
+    if m == 0.0:
+        return 0, 0
+    q, shift = math.frexp(m)
+    q_fixed = int(math.floor(abs(q) * (1 << 31) + 0.5)) * (1 if q >= 0 else -1)
+    if q_fixed == (1 << 31):
+        q_fixed //= 2
+        shift += 1
+    if shift < -31:
+        return 0, 0
+    return q_fixed, shift
+
+
+def interpreter(path: Path):
+    import tensorflow as tf
+    it = tf.lite.Interpreter(model_path=str(path),
+                             experimental_op_resolver_type=tf.lite.experimental.OpResolverType.BUILTIN_REF)
+    it.allocate_tensors()
+    return it
+
+
+def layers_from(it):
+    T = {t["index"]: t for t in it.get_tensor_details()}
+
+    def q(i):
+        p = T[i]["quantization_parameters"]
+        return np.asarray(p["scales"], np.float32), np.asarray(p["zero_points"], np.int64)
+
+    out = []
+    for op in it._get_ops_details():
+        name = op["op_name"]
+        if name in PASS or name == "DELEGATE":
+            continue
+        if name not in COMPUTE:
+            raise SystemExit(f"operación no soportada por nn.c: {name}")
+        i_in, o = op["inputs"][0], op["outputs"][0]
+        si, zi = q(i_in)
+        so, zo = q(o)
+        ish, osh = T[i_in]["shape"], T[o]["shape"]
+        L = {"op": name, "in_zp": int(zi[0]), "out_zp": int(zo[0]), "in_scale": float(si[0]),
+             "out_scale": float(so[0])}
+        if name == "CONV_2D":
+            w = it.get_tensor(op["inputs"][1])           # [Cout, 1, K, Cin]
+            b = it.get_tensor(op["inputs"][2]).astype(np.int64)
+            sw, _ = q(op["inputs"][1])
+            assert ish[1] == 1 and osh[2] == ish[2], "se espera conv 1D, paso 1, padding SAME"
+            assert int(zo[0]) == -128, "se espera ReLU fusionada (punto cero de salida -128)"
+            L.update(in_len=int(ish[2]), in_ch=int(ish[3]), out_len=int(osh[2]), out_ch=int(osh[3]),
+                     k=int(w.shape[2]), w=w[:, 0, :, :].reshape(-1), b=b, act_min=int(zo[0]), act_max=127,
+                     mult=[quantize_multiplier(float(si[0]) * float(s) / float(so[0])) for s in sw])
+        elif name == "FULLY_CONNECTED":
+            w = it.get_tensor(op["inputs"][1])           # [Cout, Cin]
+            b = it.get_tensor(op["inputs"][2]).astype(np.int64)
+            sw, _ = q(op["inputs"][1])
+            if len(sw) == 1:
+                sw = np.repeat(sw, w.shape[0])
+            L.update(in_len=1, in_ch=int(w.shape[1]), out_len=1, out_ch=int(w.shape[0]), k=1,
+                     w=w.reshape(-1), b=b, act_min=-128, act_max=127,
+                     mult=[quantize_multiplier(float(si[0]) * float(s) / float(so[0])) for s in sw])
+        else:  # pools: misma cuantización a la entrada y a la salida
+            assert abs(float(si[0]) - float(so[0])) < 1e-12 and zi[0] == zo[0]
+            k = int(ish[2]) // int(osh[2])
+            L.update(in_len=int(ish[2]), in_ch=int(ish[3]), out_len=int(osh[2]), out_ch=int(osh[3]), k=k,
+                     act_min=-128, act_max=127)
+        out.append(L)
+    return out
+
+
+def arr(ctype, name, vals, per_line=24):
+    vals = list(vals)
+    body = ",\n    ".join(", ".join(str(v) for v in vals[i:i + per_line]) for i in range(0, len(vals), per_line))
+    return f"static const {ctype} {name}[{len(vals)}] = {{\n    {body}\n}};\n"
+
+
+def flt(v: float) -> str:
+    s = f"{float(v):.9g}"
+    return (s if any(ch in s for ch in ".eEn") else s + ".0") + "f"
+
+
+def main(art: Path, data: Path):
+    meta = json.loads((art / "model_meta.json").read_text(encoding="utf-8"))
+    it = interpreter(art / "model_int8.tflite")
+    layers = layers_from(it)
+    ii, oo = it.get_input_details()[0], it.get_output_details()[0]
+    in_s, in_z = ii["quantization"]
+    out_s, out_z = oo["quantization"]
+    H = ["/* Generado por tools/export_nn.py. No editar. */", "#pragma once", "#include \"nn.h\"", "",
+         f"#define NN_CONTRACT_HASH32 0x{meta['contract_hash32']:08X}u",
+         f"#define NN_WINDOW {meta['window_frames']}", f"#define NN_N_IN {len(meta['used_feature_idx'])}",
+         f"#define NN_N_CLASSES {len(meta['labels'])}", f"#define NN_N_LAYERS {len(layers)}",
+         f"#define NN_IN_SCALE {in_s!r}", f"#define NN_IN_ZP {int(in_z)}",
+         f"#define NN_OUT_SCALE {out_s!r}", f"#define NN_OUT_ZP {int(out_z)}",
+         f"#define NN_P_MIN {flt(meta['p_min'])}", ""]
+    H.append(arr("uint8_t", "nn_used_idx", meta["used_feature_idx"]))
+    H.append(arr("double", "nn_mean", [repr(float(v)) for v in meta["mean"]], 6))
+    H.append(arr("double", "nn_std", [repr(float(v)) for v in meta["std"]], 6))
+    H.append(arr("float", "nn_ood_lo", [flt(v) for v in meta["ood_lo"]], 6))
+    H.append(arr("float", "nn_ood_hi", [flt(v) for v in meta["ood_hi"]], 6))
+    descs = []
+    for n, L in enumerate(layers):
+        op = {"CONV_2D": "NN_CONV", "MAX_POOL_2D": "NN_MAXPOOL", "AVERAGE_POOL_2D": "NN_AVGPOOL",
+              "FULLY_CONNECTED": "NN_FC"}[L["op"]]
+        w = b = m = s = "NULL"
+        if "w" in L:
+            H.append(arr("int8_t", f"nn_w{n}", L["w"].astype(int)))
+            H.append(arr("int32_t", f"nn_b{n}", L["b"]))
+            H.append(arr("int32_t", f"nn_m{n}", [mm for mm, _ in L["mult"]], 8))
+            H.append(arr("int8_t", f"nn_s{n}", [ss for _, ss in L["mult"]]))
+            w, b, m, s = f"nn_w{n}", f"nn_b{n}", f"nn_m{n}", f"nn_s{n}"
+        descs.append(f"    {{{op}, {L['in_len']}, {L['in_ch']}, {L['out_len']}, {L['out_ch']}, {L['k']}, "
+                     f"{L['in_zp']}, {L['out_zp']}, {L['act_min']}, {L['act_max']}, {w}, {b}, {m}, {s}}},")
+    H += ["static const nn_layer_t nn_layers[NN_N_LAYERS] = {", *descs, "};", ""]
+    (ROOT / "firmware/src/nn_model.h").write_text("\n".join(H), encoding="utf-8", newline="\n")
+
+    # vectores de prueba: ventanas reales del conjunto (partición de prueba si existe)
+    d = np.load(data)
+    X = d["X"]
+    idx = np.random.default_rng(1).choice(len(X), 32, replace=False)
+    used = np.array(meta["used_feature_idx"])
+    mu, sd = np.array(meta["mean"]), np.array(meta["std"])
+    V = ["/* Generado por tools/export_nn.py. No editar. */", "#pragma once", "#include <stdint.h>", "",
+         f"#define NNV_N {len(idx)}", "typedef struct { float win[NN_WINDOW][RF_N_FIELDS]; int8_t logits[NN_N_CLASSES]; } nnv_t;",
+         "static const nnv_t nnv[NNV_N] = {"]
+    for i in idx:
+        win = X[i].astype(np.float32)                 # (W, n_fields), unidades físicas
+        x = (win[:, used].astype(np.float64) - mu) / sd
+        qin = np.clip(np.round(x / in_s + in_z), -128, 127).astype(np.int8)
+        it.set_tensor(ii["index"], qin[None])
+        it.invoke()
+        lo = it.get_tensor(oo["index"])[0]
+        rows = ", ".join("{" + ", ".join(flt(v) for v in r) + "}" for r in win)
+        V.append(f"  {{{{{rows}}}, {{{', '.join(str(int(v)) for v in lo)}}}}},")
+    V += ["};", ""]
+    (ROOT / "firmware/tests/nn_vectors.h").write_text("\n".join(V), encoding="utf-8", newline="\n")
+    print(f"nn_model.h: {len(layers)} capas; nn_vectors.h: {len(idx)} ventanas")
+
+
+if __name__ == "__main__":
+    a = sys.argv[1:]
+    main(Path(a[0]) if a else ROOT / "ml/artifacts/synth_v1", Path(a[1]) if len(a) > 1 else ROOT / "ml/data/synth_v1.npz")

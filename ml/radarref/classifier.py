@@ -23,12 +23,10 @@ class Classifier:
         self.c = c or ct.load()
         if self.meta["contract_hash32"] != self.c.hash32:
             raise ModelMismatch("el modelo se entrenó con otro contrato: no se carga (fallo seguro)")
-        try:
-            from ai_edge_litert.interpreter import Interpreter
-        except ImportError:
-            import tensorflow as tf
-            Interpreter = tf.lite.Interpreter
-        self.it = Interpreter(model_content=(d / "model_int8.tflite").read_bytes())
+        import tensorflow as tf
+        # núcleos de referencia: los mismos que TFLite Micro y firmware/src/nn.c
+        self.it = tf.lite.Interpreter(model_content=(d / "model_int8.tflite").read_bytes(),
+                                      experimental_op_resolver_type=tf.lite.experimental.OpResolverType.BUILTIN_REF)
         self.it.allocate_tensors()
         self.i, self.o = self.it.get_input_details()[0], self.it.get_output_details()[0]
         m = self.meta
@@ -42,7 +40,11 @@ class Classifier:
         self.it.set_tensor(self.i["index"], np.clip(np.round(x / s + z), -128, 127).astype(np.int8)[None])
         self.it.invoke()
         so, zo = self.o["quantization"]
-        return (self.it.get_tensor(self.o["index"])[0].astype(np.float32) - zo) * so
+        z = (self.it.get_tensor(self.o["index"])[0].astype(np.float64) - zo) * so
+        if self.meta.get("output") != "logits":
+            return z
+        e = np.exp(z - z.max())       # softmax en coma flotante, igual que nn.c
+        return e / e.sum()
 
 
 class Inference:

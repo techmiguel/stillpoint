@@ -25,15 +25,30 @@ EXCLUDED = ("x", "y", "range", "state")
 
 
 def build(n_t, n_f, n_cls):
+    """Solo operaciones con núcleo int8 directo en TFLite Micro / CMSIS-NN / MVP:
+    CONV_2D (+sesgo +ReLU fusionados), MAX_POOL_2D, AVERAGE_POOL_2D,
+    FULLY_CONNECTED. El softmax se calcula fuera, en coma flotante, sobre los
+    logits decuantizados (firmware/src/nn.c y radarref/classifier.py)."""
     import tensorflow as tf
+    L = tf.keras.layers
     inp = tf.keras.Input((n_t, n_f), name="window")
-    x = tf.keras.layers.Conv1D(24, 3, padding="same", activation="relu")(inp)
-    x = tf.keras.layers.Conv1D(24, 3, padding="same", activation="relu", dilation_rate=2)(x)
-    x = tf.keras.layers.Conv1D(24, 3, padding="same", activation="relu", dilation_rate=4)(x)
-    x = tf.keras.layers.GlobalAveragePooling1D()(x)
-    x = tf.keras.layers.Dropout(0.2)(x)
-    out = tf.keras.layers.Dense(n_cls, activation="softmax", name="probs")(x)
-    return tf.keras.Model(inp, out)
+    x = L.Conv1D(24, 3, padding="same", activation="relu")(inp)
+    x = L.MaxPooling1D(2)(x)
+    x = L.Conv1D(24, 3, padding="same", activation="relu")(x)
+    x = L.MaxPooling1D(2)(x)
+    x = L.Conv1D(24, 3, padding="same", activation="relu")(x)
+    x = L.AveragePooling1D(n_t // 4)(x)
+    x = L.Flatten()(x)
+    x = L.Dropout(0.2)(x)
+    logits = L.Dense(n_cls, name="logits")(x)
+    probs = L.Softmax(name="probs")(logits)
+    return tf.keras.Model(inp, probs), tf.keras.Model(inp, logits)
+
+
+def softmax(z):
+    z = np.asarray(z, dtype=np.float64)
+    e = np.exp(z - z.max(axis=-1, keepdims=True))
+    return e / e.sum(axis=-1, keepdims=True)
 
 
 def main():
@@ -67,7 +82,7 @@ def main():
 
     counts = np.bincount(y[tr], minlength=len(labels))
     cw = {k: float(len(y[tr]) / (len(labels) * max(n, 1))) for k, n in enumerate(counts)}
-    model = build(Xn.shape[1], Xn.shape[2], len(labels))
+    model, logits_model = build(Xn.shape[1], Xn.shape[2], len(labels))
     model.compile(optimizer=tf.keras.optimizers.Adam(2e-3), loss="sparse_categorical_crossentropy",
                   metrics=["accuracy"])
     model.fit(Xn[tr], y[tr], validation_data=(Xn[va], y[va]), epochs=a.epochs, batch_size=64,
@@ -78,7 +93,7 @@ def main():
     def rep():
         for i in np.random.default_rng(0).choice(np.where(tr)[0], 300):
             yield [Xn[i:i + 1]]
-    conv = tf.lite.TFLiteConverter.from_keras_model(model)
+    conv = tf.lite.TFLiteConverter.from_keras_model(logits_model)
     conv.optimizations = [tf.lite.Optimize.DEFAULT]
     conv.representative_dataset = rep
     conv.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
@@ -89,7 +104,9 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     (out / "model_int8.tflite").write_bytes(tfl)
 
-    interp = tf.lite.Interpreter(model_content=tfl)
+    # núcleos de referencia: los mismos que TFLite Micro y que firmware/src/nn.c
+    interp = tf.lite.Interpreter(model_content=tfl,
+                                 experimental_op_resolver_type=tf.lite.experimental.OpResolverType.BUILTIN_REF)
     interp.allocate_tensors()
     ii, oo = interp.get_input_details()[0], interp.get_output_details()[0]
 
@@ -100,8 +117,8 @@ def main():
         for x in Xb:
             interp.set_tensor(ii["index"], np.clip(np.round(x / s + z), -128, 127).astype(np.int8)[None])
             interp.invoke()
-            res.append((interp.get_tensor(oo["index"])[0].astype(np.float32) - zo) * so)
-        return np.array(res)
+            res.append((interp.get_tensor(oo["index"])[0].astype(np.float64) - zo) * so)
+        return softmax(np.array(res))
 
     p_f = model.predict(Xn[te], verbose=0)
     p_q = predict_int8(Xn[te])
@@ -135,6 +152,7 @@ def main():
         "mean": mu.tolist(), "std": sd.tolist(), "ood_lo": lo.tolist(), "ood_hi": hi.tolist(),
         "input_quant": list(map(float, ii["quantization"])), "output_quant": list(map(float, oo["quantization"])),
         "p_min": p_min, "window_frames": c.window_frames, "dataset": str(a.data),
+        "output": "logits", "softmax": "float, fuera del modelo",
     }
     (out / "model_meta.json").write_text(json.dumps(meta, indent=1), encoding="utf-8")
     (out / "report.json").write_text(json.dumps(report, indent=1, ensure_ascii=False), encoding="utf-8")
@@ -146,6 +164,12 @@ def main():
         f"static const uint8_t model_data[MODEL_DATA_LEN] __attribute__((aligned(16))) = {{{hexes}}};\n",
         encoding="utf-8")
     print(json.dumps(report, indent=1, ensure_ascii=False))
+    # el firmware enlaza exactamente este modelo (TFLite Micro y nn.c)
+    root = Path(__file__).resolve().parents[1]
+    (root / "firmware/src/model_data.h").write_bytes((out / "model_data.h").read_bytes())
+    import subprocess
+    import sys
+    subprocess.run([sys.executable, str(root / "tools/export_nn.py"), str(out), str(a.data)], check=True)
 
 
 if __name__ == "__main__":
