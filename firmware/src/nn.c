@@ -157,3 +157,5 @@ int rf_nn_infer(const float window[][RF_N_FIELDS], int8_t *logits, float *probs)
     }
     return ood;
 }
+
+uint32_t rf_nn_model_hash(void) { return NN_MODEL_HASH32; }

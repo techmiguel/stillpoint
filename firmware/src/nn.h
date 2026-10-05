@@ -29,3 +29,5 @@ int32_t nn_multiply_by_quantized_multiplier(int32_t x, int32_t mult, int shift);
  * Devuelve el nº de características de la última trama fuera del rango de
  * entrenamiento (para la decisión con fallo seguro). */
 int rf_nn_infer(const float window[][RF_N_FIELDS], int8_t *logits, float *probs);
+/* Huella del modelo embebido (CRC32 del .tflite exportado): atributo ModelHash. */
+uint32_t rf_nn_model_hash(void);

@@ -11,6 +11,8 @@
 
 extern "C" {
 #include "app.h"
+#include "features_v1.h"
+#include "nn.h"
 }
 
 using namespace chip;
@@ -37,6 +39,13 @@ void SetOccupancy(EndpointId ep, bool on)
 void Publish(intptr_t)
 {
     sScheduled = false;
+    static bool sStaticDone = false;
+    if (!sStaticDone) {
+        // Identidad del firmware: versión del contrato de características y modelo embebido.
+        Radar60Presence::Attributes::ContractVersion::Set(kEpRoom, RF_CONTRACT_VERSION);
+        Radar60Presence::Attributes::ModelHash::Set(kEpRoom, rf_nn_model_hash());
+        sStaticDone = true;
+    }
     const rf_outputs_t o = sPending;   // copia tomada en el hilo de Matter
     if (o.occupied != sPublished.occupied) {
         SetOccupancy(kEpRoom, o.occupied);
@@ -53,8 +62,20 @@ void Publish(intptr_t)
     if (o.uncertain != sPublished.uncertain) {
         BooleanState::Attributes::StateValue::Set(kEpUncertain, o.uncertain);
     }
-    // Clúster de fabricante (radar60_cluster.xml): recuento y estado de caída detallado.
-    // Se escriben con los accesores que genera ZAP para el clúster 0xFFF1FC01.
+    // Clúster de fabricante (radar60_cluster.xml) en EP1: recuento y estado de
+    // caída detallado. Accesores que genera ZAP para el clúster 0xFFF1FC01.
+    if (o.count != sPublished.count) {
+        Radar60Presence::Attributes::PersonCount::Set(kEpRoom, o.count);
+    }
+    if (o.worst_fall != sPublished.worst_fall) {
+        Radar60Presence::Attributes::FallState::Set(kEpRoom, static_cast<uint8_t>(o.worst_fall));
+    }
+    if (o.uncertain != sPublished.uncertain) {
+        Radar60Presence::Attributes::Uncertain::Set(kEpRoom, o.uncertain);
+    }
+    if (o.n_proposed_exclusions != sPublished.n_proposed_exclusions) {
+        Radar60Presence::Attributes::ProposedExclusions::Set(kEpRoom, o.n_proposed_exclusions);
+    }
     sPublished = o;
 }
 } // namespace
@@ -68,7 +89,8 @@ extern "C" void rf_matter_publish(const rf_outputs_t * out)
     // Se compara con lo último enviado desde esta tarea, sin leer el estado del
     // hilo de Matter. Un cambio frenado por el límite se reintenta en la trama siguiente.
     const bool changed = out->occupied != sLastSent.occupied || out->fall_alarm != sLastSent.fall_alarm ||
-        out->uncertain != sLastSent.uncertain ||
+        out->uncertain != sLastSent.uncertain || out->count != sLastSent.count ||
+        out->worst_fall != sLastSent.worst_fall || out->n_proposed_exclusions != sLastSent.n_proposed_exclusions ||
         std::memcmp(out->zone_occupied, sLastSent.zone_occupied, sizeof(out->zone_occupied)) != 0;
     const bool urgent = out->fall_alarm && !sLastSent.fall_alarm;
     if (!changed || (!urgent && now - sLastReportMs < 500) || sScheduled.exchange(true)) {

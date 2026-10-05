@@ -1,7 +1,9 @@
 """Compila el código C del firmware en el PC y lo compara con la referencia Python."""
+import re
 import subprocess
 import sys
 import unittest
+import zlib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -9,6 +11,15 @@ sys.path.insert(0, str(ROOT / "tools"))
 sys.path.insert(0, str(ROOT / "ml"))
 
 import build_host  # noqa: E402
+
+
+class ModelHeaderTest(unittest.TestCase):
+    def test_model_hash_matches_exported_tflite(self):
+        """nn_model.h debe salir del mismo .tflite que usa la referencia (ModelHash en Matter)."""
+        h = (ROOT / "firmware/src/nn_model.h").read_text(encoding="utf-8")
+        got = int(re.search(r"#define NN_MODEL_HASH32 0x([0-9A-F]+)u", h).group(1), 16)
+        tfl = ROOT / "ml/artifacts/synth_v1/model_int8.tflite"
+        self.assertEqual(got, zlib.crc32(tfl.read_bytes()))
 
 
 def have_cc() -> bool:

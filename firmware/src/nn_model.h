@@ -3,6 +3,7 @@
 #include "nn.h"
 
 #define NN_CONTRACT_HASH32 0xAE827C6Bu
+#define NN_MODEL_HASH32 0xC06564E5u  /* CRC32 de model_int8.tflite (ModelHash en Matter) */
 #define NN_WINDOW 20
 #define NN_N_IN 20
 #define NN_N_CLASSES 4
