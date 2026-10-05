@@ -1,0 +1,14 @@
+{
+ "antena_radomo_mm": 4.947,
+ "material_en_cono_FOV_mm3": 0.0,
+ "holgura_radial_placa_mm": 0.4,
+ "altura_libre_sobre_placa_mm": 8.4,
+ "holgura_labio_mm": 0.2,
+ "radomo_mm": 1.478,
+ "altura_total_mm": 23.73,
+ "diametro_mm": 64.8,
+ "volumen_cm3": {
+  "carcasa": 12.81,
+  "tapa": 11.6
+ }
+}
