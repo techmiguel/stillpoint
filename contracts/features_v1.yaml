@@ -1,0 +1,56 @@
+# Contrato de características firmware <-> entrenamiento, versión 1.
+#
+# Es la interfaz clave del proyecto (ver docs/03_contrato_caracteristicas.md).
+# Reglas:
+#   - El firmware (C) y la referencia (Python) producen EXACTAMENTE estos campos,
+#     en este orden, con estas unidades y esta cuantización.
+#   - Cualquier cambio de orden, unidad, escala o significado => nueva versión
+#     (features_v2.yaml). Nunca se edita una versión publicada.
+#   - El hash del contrato (CRC-32 de la forma canónica) viaja en cada registro
+#     y en los metadatos del modelo; el firmware rechaza un modelo con otro hash.
+#   - La normalización (media/desviación) NO forma parte del contrato: va dentro
+#     del artefacto del modelo.
+#   - Después de editar: python tools/gen_contract.py (regenera el .h de C).
+
+version: 1
+frame_rate_hz: 10          # una muestra de características por pista y trama
+window_frames: 20          # ventana del clasificador: 2,0 s
+window_hop_frames: 5       # el clasificador se ejecuta a 2 Hz
+
+# Sistema de coordenadas: origen en el suelo bajo el sensor, z hacia arriba (m).
+# Velocidad radial positiva = se aleja del sensor.
+fields:
+  - {name: x,              unit: m,   scale: 1000, desc: "posición x de la pista (filtrada)"}
+  - {name: y,              unit: m,   scale: 1000, desc: "posición y de la pista (filtrada)"}
+  - {name: z_centroid,     unit: m,   scale: 1000, desc: "altura media ponderada por potencia de los puntos del cuerpo"}
+  - {name: z_max,          unit: m,   scale: 1000, desc: "altura máxima de los puntos del cuerpo"}
+  - {name: z_min,          unit: m,   scale: 1000, desc: "altura mínima de los puntos del cuerpo"}
+  - {name: z_std,          unit: m,   scale: 1000, desc: "desviación típica de altura de los puntos"}
+  - {name: xy_extent,      unit: m,   scale: 1000, desc: "extensión horizontal (desv. típica del eje mayor)"}
+  - {name: vx,             unit: m/s, scale: 1000, desc: "velocidad x del filtro de Kalman"}
+  - {name: vy,             unit: m/s, scale: 1000, desc: "velocidad y del filtro de Kalman"}
+  - {name: vz,             unit: m/s, scale: 1000, desc: "derivada filtrada de z_centroid"}
+  - {name: vr_mean,        unit: m/s, scale: 1000, desc: "velocidad radial media ponderada"}
+  - {name: vr_std,         unit: m/s, scale: 1000, desc: "dispersión de velocidad radial (micro-Doppler)"}
+  - {name: e_approach_db,  unit: dB,  scale: 100,  desc: "energía Doppler acercándose"}
+  - {name: e_recede_db,    unit: dB,  scale: 100,  desc: "energía Doppler alejándose"}
+  - {name: n_points,       unit: "1", scale: 1,    desc: "número de detecciones asociadas en la trama"}
+  - {name: power_db,       unit: dB,  scale: 100,  desc: "potencia total de las detecciones"}
+  - {name: micro_db,       unit: dB,  scale: 100,  desc: "potencia en banda respiratoria 0,1-0,6 Hz"}
+  - {name: breath_hz,      unit: Hz,  scale: 1000, desc: "frecuencia respiratoria estimada (0 si no hay)"}
+  - {name: breath_snr_db,  unit: dB,  scale: 100,  desc: "SNR del pico respiratorio"}
+  - {name: range,          unit: m,   scale: 1000, desc: "distancia sensor-pista"}
+  - {name: state,          unit: enum, scale: 1,   desc: "0 tentativa, 1 móvil, 2 estática, 3 ocluida, 4 interferente"}
+  - {name: still_s,        unit: s,   scale: 10,   desc: "segundos desde el último movimiento macro (satura 3276)"}
+  - {name: occluded,       unit: bool, scale: 1,   desc: "1 si otra pista tapa la línea de visión"}
+  - {name: quality,        unit: "1", scale: 1000, desc: "calidad de pista 0..1 (aciertos recientes / esperados)"}
+
+# Registro binario (little-endian), 66 bytes:
+#   u16 magic = 0x5246 ('RF')   u8 version   u8 n_fields
+#   u32 frame_id                u32 t_ms
+#   u8  track_id                u8 flags     u16 contract_hash16
+#   i16 fields[n_fields]        u16 crc16-CCITT (sobre todo lo anterior)
+record:
+  magic: 0x5246
+  endianness: little
+  saturate: true   # los valores fuera de rango se saturan a int16, no se envuelven

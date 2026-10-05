@@ -1,0 +1,44 @@
+/* Generado por tools/gen_contract.py desde contracts/features_v1.yaml. No editar. */
+#pragma once
+#include <stdint.h>
+
+#define RF_CONTRACT_VERSION 1u
+#define RF_CONTRACT_HASH32 0xAE827C6Bu
+#define RF_CONTRACT_HASH16 0x7C6Bu
+#define RF_MAGIC 0x5246u
+#define RF_N_FIELDS 24u
+#define RF_RECORD_SIZE 66u
+#define RF_FRAME_RATE_HZ 10f
+#define RF_WINDOW_FRAMES 20u
+#define RF_WINDOW_HOP 5u
+
+typedef enum {
+    RF_F_X = 0,
+    RF_F_Y = 1,
+    RF_F_Z_CENTROID = 2,
+    RF_F_Z_MAX = 3,
+    RF_F_Z_MIN = 4,
+    RF_F_Z_STD = 5,
+    RF_F_XY_EXTENT = 6,
+    RF_F_VX = 7,
+    RF_F_VY = 8,
+    RF_F_VZ = 9,
+    RF_F_VR_MEAN = 10,
+    RF_F_VR_STD = 11,
+    RF_F_E_APPROACH_DB = 12,
+    RF_F_E_RECEDE_DB = 13,
+    RF_F_N_POINTS = 14,
+    RF_F_POWER_DB = 15,
+    RF_F_MICRO_DB = 16,
+    RF_F_BREATH_HZ = 17,
+    RF_F_BREATH_SNR_DB = 18,
+    RF_F_RANGE = 19,
+    RF_F_STATE = 20,
+    RF_F_STILL_S = 21,
+    RF_F_OCCLUDED = 22,
+    RF_F_QUALITY = 23,
+} rf_field_t;
+
+static const float rf_scale[RF_N_FIELDS] = {
+    1000.0f, 1000.0f, 1000.0f, 1000.0f, 1000.0f, 1000.0f, 1000.0f, 1000.0f, 1000.0f, 1000.0f, 1000.0f, 1000.0f, 100.0f, 100.0f, 1.0f, 100.0f, 100.0f, 1000.0f, 100.0f, 1000.0f, 1.0f, 10.0f, 1.0f, 1000.0f
+};

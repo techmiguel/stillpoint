@@ -1,0 +1,65 @@
+{
+ "AVISO": "conjunto SINTÉTICO: valida la cadena, no el producto; no publicar como métrica",
+ "n_train": 2630,
+ "n_val": 353,
+ "n_test": 557,
+ "test_subjects": [
+  "S09",
+  "S10",
+  "S11"
+ ],
+ "test_rooms": [
+  "R3"
+ ],
+ "macro_f1_no_abstenidas": 0.888,
+ "f1_por_clase": {
+  "standing": 0.918,
+  "sitting": 0.762,
+  "lying": 0.943,
+  "fall": 0.93
+ },
+ "tasa_abstencion": 0.029,
+ "recall_ventanas_caida": {
+  "k": 41,
+  "n": 46,
+  "p": 0.891,
+  "ic95": [
+   0.77,
+   0.953
+  ]
+ },
+ "acuerdo_int8_vs_float": 0.991,
+ "matriz_confusion(filas=verdad)": [
+  [
+   238,
+   3,
+   0,
+   0
+  ],
+  [
+   38,
+   79,
+   0,
+   0
+  ],
+  [
+   3,
+   12,
+   136,
+   2
+  ],
+  [
+   2,
+   0,
+   3,
+   41
+  ]
+ ],
+ "clases": [
+  "standing",
+  "sitting",
+  "lying",
+  "fall"
+ ],
+ "tamano_modelo_bytes": 14592
+}

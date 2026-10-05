@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+ml/data/
+firmware/build/
+# los datos reales nunca se versionan aquí
+data_real/
