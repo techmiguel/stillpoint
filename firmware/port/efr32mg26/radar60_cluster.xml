@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!--
+  Clúster de fabricante radar60 (docs/04_matter.md). Se añade a ZAP como XML
+  personalizado. 0xFFF1 es el identificador de fabricante de pruebas de la CSA:
+  sustituirlo por un Vendor ID propio antes de distribuir.
+-->
+<configurator>
+  <domain name="CHIP"/>
+  <cluster manufacterCode="0xFFF1">
+    <domain>Measurement &amp; Sensing</domain>
+    <name>Radar60 Presence</name>
+    <code>0xFFF1FC01</code>
+    <define>RADAR60_PRESENCE_CLUSTER</define>
+    <description>Detalle del sensor de presencia y caídas radar60.</description>
+    <attribute side="server" code="0xFFF10000" define="PERSON_COUNT" type="int8u" min="0" max="16" writable="false" reportable="true" default="0">PersonCount</attribute>
+    <attribute side="server" code="0xFFF10001" define="FALL_STATE" type="enum8" min="0" max="3" writable="false" reportable="true" default="0">FallState</attribute>
+    <attribute side="server" code="0xFFF10002" define="UNCERTAIN" type="boolean" writable="false" reportable="true" default="0">Uncertain</attribute>
+    <attribute side="server" code="0xFFF10003" define="CONTRACT_VERSION" type="int8u" writable="false" default="1">ContractVersion</attribute>
+    <attribute side="server" code="0xFFF10004" define="MODEL_HASH" type="int32u" writable="false" default="0">ModelHash</attribute>
+    <attribute side="server" code="0xFFF10005" define="PROPOSED_EXCLUSIONS" type="int8u" writable="false" reportable="true" default="0">ProposedExclusions</attribute>
+  </cluster>
+</configurator>

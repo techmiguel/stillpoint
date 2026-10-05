@@ -26,6 +26,8 @@ TARGETS = {
     "replay": (["tests/replay.c"], CORE + DSP + NN + APP),
     "test_nn": (["tests/test_nn.c"], NN),
     "replay_app": (["tests/replay_app.c"], CORE + DSP + NN + APP),
+    "test_bgt60": (["tests/test_bgt60.c"], ["src/bgt60_frame.c"]),
+    "test_cobs": (["tests/test_cobs.c"], ["src/cobs.c"]),
 }
 
 

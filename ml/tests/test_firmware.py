@@ -6,6 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools"))
+sys.path.insert(0, str(ROOT / "ml"))
 
 import build_host  # noqa: E402
 
@@ -30,6 +31,55 @@ class FirmwareCoreTest(unittest.TestCase):
         out = build_host.build("test_nn")
         r = subprocess.run([str(out)], capture_output=True, text=True)
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
+    def test_bgt60_fifo_unpack_matches_capture_tool(self):
+        import tempfile
+        import numpy as np
+        sys.path.insert(0, str(ROOT / "ml"))
+        from capture_kit import to_signed
+        rng = np.random.default_rng(3)
+        # FIFO real: 12 bits sin signo, intercalado [chirp][muestra][rx], con offset distinto por antena
+        cube = np.clip(rng.normal([[[2048]], [[1900]], [[2200]]], 300, (3, 32, 128)), 0, 4095).round().astype(np.uint16)
+        cube[0, 0, :5] = 4095                       # saturación
+        fifo = cube.transpose(1, 2, 0).reshape(-1)
+        exe = build_host.build("test_bgt60")
+        with tempfile.TemporaryDirectory() as d:
+            fi, fo = Path(d) / "f.bin", Path(d) / "o.bin"
+            fi.write_bytes(fifo.astype("<u2").tobytes())
+            subprocess.run([str(exe), str(fi), str(fo)], check=True)
+            c_out = np.frombuffer(fo.read_bytes(), "<i2").reshape(3, 32, 128)
+        py = np.round(to_signed(cube / 4095.0) * 2047).astype(int)
+        np.testing.assert_array_equal(c_out, py)
+        # empaquetado de 12 bits del FIFO: 2 muestras en 3 bytes, MSB primero
+        s = fifo.astype(np.uint32).reshape(-1, 2)
+        packed = np.stack([s[:, 0] >> 4, ((s[:, 0] & 0xF) << 4) | (s[:, 1] >> 8), s[:, 1] & 0xFF], 1)
+        with tempfile.TemporaryDirectory() as d:
+            fi, fo = Path(d) / "p.bin", Path(d) / "o.bin"
+            fi.write_bytes(packed.astype(np.uint8).tobytes())
+            subprocess.run([str(exe), "-p", str(fi), str(fo)], check=True)
+            np.testing.assert_array_equal(np.frombuffer(fo.read_bytes(), "<u2"), fifo)
+
+    def test_diag_stream_cobs_roundtrip(self):
+        import tempfile
+        import numpy as np
+        import diag_reader
+        from radarref import contract as ct
+        c = ct.load()
+        rng = np.random.default_rng(9)
+        recs = [ct.pack(c, i, 100 * i, 1, 2, rng.normal(0, 1, c.n) * (i % 3)) for i in range(40)]
+        blobs = {"registros": b"".join(recs),
+                 "ceros_y_largos": bytes(300) + bytes(range(1, 256)) * 3 + b"\x00\x01\x00"}
+        exe = build_host.build("test_cobs")
+        with tempfile.TemporaryDirectory() as d:
+            for name, blob in blobs.items():
+                blk = c.record_size if name == "registros" else len(blob)
+                fi, fo = Path(d) / "i.bin", Path(d) / "o.bin"
+                fi.write_bytes(blob)
+                subprocess.run([str(exe), str(fi), str(fo), str(blk)], check=True)
+                dec = b"".join(diag_reader.cobs_decode(fr) for fr in diag_reader.frames([fo.read_bytes()]))
+                self.assertEqual(dec, blob, name)
+            out = list(diag_reader.records([fo.read_bytes()]))
+        self.assertEqual(out, [])   # el segundo blob no son registros: se descartan, no se inventan
 
     def test_full_app_matches_python_end_to_end(self):
         sys.path.insert(0, str(ROOT / "ml"))
