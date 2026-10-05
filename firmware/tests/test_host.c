@@ -1,5 +1,6 @@
 /* Pruebas en PC del código portable del firmware frente a la referencia Python.
  * Compilar: make -C firmware test   (gcc o clang del PC) */
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -36,7 +37,7 @@ static void test_decision(void)
         if (v->reset) {
             rf_decision_init(&d, &RF_DECISION_DEFAULTS);
         }
-        rf_decision_in_t x = {v->t, {v->p[0], v->p[1], v->p[2], v->p[3]}, v->z_c, v->vz_min, v->still_s,
+        rf_decision_in_t x = {(uint32_t)lrintf(v->t * 1000.0f), {v->p[0], v->p[1], v->p[2], v->p[3]}, v->z_c, v->vz_min, v->still_s,
                               v->quality, v->occluded != 0, v->ood};
         rf_posture_t post;
         rf_fall_t fall;

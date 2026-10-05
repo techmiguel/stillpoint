@@ -6,12 +6,14 @@ const rf_decision_params_t RF_DECISION_DEFAULTS = {
     .ood_max = 3,
 };
 
+static uint32_t ms(float s) { return (uint32_t)(s * 1000.0f + 0.5f); }
+
 void rf_decision_init(rf_decision_t *d, const rf_decision_params_t *p)
 {
     d->p = *p;
     d->fall = RF_FALL_NONE;
-    d->t_susp = 0.0f;
-    d->t_up = 0.0f;
+    d->t_susp_ms = 0;
+    d->t_up_ms = 0;
     d->has_t_up = false;
 }
 
@@ -39,7 +41,7 @@ void rf_decision_update(rf_decision_t *d, const rf_decision_in_t *x,
     case RF_FALL_NONE:
         if (trigger && trusted_fall) {
             d->fall = RF_FALL_SUSPECTED;
-            d->t_susp = x->t;
+            d->t_susp_ms = x->t_ms;
         }
         break;
     case RF_FALL_SUSPECTED:
@@ -47,10 +49,10 @@ void rf_decision_update(rf_decision_t *d, const rf_decision_in_t *x,
             d->fall = RF_FALL_UNCERTAIN;
         } else if (x->z_c > p->z_up) {
             d->fall = RF_FALL_NONE;
-        } else if (x->t - d->t_susp >= p->confirm_s && x->z_c < p->z_floor && x->still_s >= p->still_s) {
+        } else if (x->t_ms - d->t_susp_ms >= ms(p->confirm_s) && x->z_c < p->z_floor && x->still_s >= p->still_s) {
             d->fall = RF_FALL_CONFIRMED;
             d->has_t_up = false;
-        } else if (x->t - d->t_susp >= p->resolve_max_s) {
+        } else if (x->t_ms - d->t_susp_ms >= ms(p->resolve_max_s)) {
             d->fall = RF_FALL_UNCERTAIN;
         }
         break;
@@ -58,10 +60,10 @@ void rf_decision_update(rf_decision_t *d, const rf_decision_in_t *x,
     case RF_FALL_UNCERTAIN:
         if (trusted_fall && x->z_c > p->z_up) {
             if (!d->has_t_up) {
-                d->t_up = x->t;
+                d->t_up_ms = x->t_ms;
                 d->has_t_up = true;
             }
-            if (x->t - d->t_up >= p->clear_s) {
+            if (x->t_ms - d->t_up_ms >= ms(p->clear_s)) {
                 d->fall = RF_FALL_NONE;
                 d->has_t_up = false;
             }

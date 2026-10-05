@@ -50,8 +50,8 @@ class TrackDecision:
     def __init__(self, p: Params = Params()):
         self.p = p
         self.fall = F_NONE
-        self.t_susp = 0.0
-        self.t_up = None
+        self.t_susp = 0          # ms
+        self.t_up = None         # ms
 
     def update(self, x: Inputs):
         p = self.p
@@ -68,24 +68,28 @@ class TrackDecision:
         posture = (k + 1) if (trusted and conf >= p.p_min) else P_UNCERTAIN
 
         # --- caída ---------------------------------------------------------
+        # Los tiempos se comparan en milisegundos enteros: una alarma no puede
+        # depender del redondeo de coma flotante (con float, 9,4 - 5,4 < 4).
+        tm = int(round(x.t * 1000))
+        ms = lambda s: int(round(s * 1000))  # noqa: E731
         trigger = probs[3] >= p.p_fall or (x.vz_min <= p.vz_fall and x.z_c < p.z_floor)
         if self.fall == F_NONE:
             if trigger and trusted_fall:
-                self.fall, self.t_susp = F_SUSPECTED, x.t
+                self.fall, self.t_susp = F_SUSPECTED, tm
         elif self.fall == F_SUSPECTED:
             if not trusted_fall:
                 self.fall = F_UNCERTAIN
             elif x.z_c > p.z_up:
                 self.fall = F_NONE                      # se levantó / falsa alarma
-            elif (x.t - self.t_susp >= p.confirm_s and x.z_c < p.z_floor
+            elif (tm - self.t_susp >= ms(p.confirm_s) and x.z_c < p.z_floor
                   and x.still_s >= p.still_s):
                 self.fall, self.t_up = F_CONFIRMED, None
-            elif x.t - self.t_susp >= p.resolve_max_s:
+            elif tm - self.t_susp >= ms(p.resolve_max_s):
                 self.fall = F_UNCERTAIN                 # no se resuelve: se avisa como incierta
         elif self.fall in (F_CONFIRMED, F_UNCERTAIN):
             if trusted_fall and x.z_c > p.z_up:
-                self.t_up = x.t if self.t_up is None else self.t_up
-                if x.t - self.t_up >= p.clear_s:
+                self.t_up = tm if self.t_up is None else self.t_up
+                if tm - self.t_up >= ms(p.clear_s):
                     self.fall, self.t_up = F_NONE, None
             else:
                 self.t_up = None

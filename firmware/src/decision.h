@@ -2,6 +2,7 @@
  * firmware/tests/decision_vectors.h obliga a que ambos coincidan. */
 #pragma once
 #include <stdbool.h>
+#include <stdint.h>
 
 typedef enum { RF_POSTURE_UNCERTAIN = 0, RF_POSTURE_STANDING, RF_POSTURE_SITTING, RF_POSTURE_LYING } rf_posture_t;
 typedef enum { RF_FALL_NONE = 0, RF_FALL_SUSPECTED, RF_FALL_CONFIRMED, RF_FALL_UNCERTAIN } rf_fall_t;
@@ -12,7 +13,7 @@ typedef struct {
 } rf_decision_params_t;
 
 typedef struct {
-    float t;
+    uint32_t t_ms;           /* tiempo en ms enteros: sin redondeos en las comparaciones */
     float probs[4];          /* de pie, sentado, tumbado, caída */
     float z_c, vz_min, still_s, quality;
     bool occluded;
@@ -22,8 +23,8 @@ typedef struct {
 typedef struct {
     rf_decision_params_t p;
     rf_fall_t fall;
-    float t_susp;
-    float t_up;
+    uint32_t t_susp_ms;
+    uint32_t t_up_ms;
     bool has_t_up;
 } rf_decision_t;
 

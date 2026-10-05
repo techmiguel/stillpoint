@@ -25,6 +25,7 @@ TARGETS = {
     "test_host": (["tests/test_host.c"], CORE),
     "replay": (["tests/replay.c"], CORE + DSP + NN + APP),
     "test_nn": (["tests/test_nn.c"], NN),
+    "replay_app": (["tests/replay_app.c"], CORE + DSP + NN + APP),
 }
 
 

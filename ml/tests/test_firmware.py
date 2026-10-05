@@ -31,6 +31,19 @@ class FirmwareCoreTest(unittest.TestCase):
         r = subprocess.run([str(out)], capture_output=True, text=True)
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
 
+    def test_full_app_matches_python_end_to_end(self):
+        sys.path.insert(0, str(ROOT / "ml"))
+        import compare_app
+        from radarref.classifier import Classifier
+        exe = build_host.build("replay_app")
+        clf = Classifier(compare_app.ART)
+        scene, dur = compare_app.all_scenes()["caida"]
+        r = compare_app.run("caida", scene, dur, exe, clf)
+        self.assertEqual(r["recuento_igual"], 1.0)
+        self.assertEqual(r["postura_y_caida_iguales"], 1.0)
+        self.assertEqual(r["alarma_C_s"], r["alarma_python_s"])
+        self.assertIsNotNone(r["alarma_C_s"])
+
     def test_dsp_and_tracker_match_python(self):
         sys.path.insert(0, str(ROOT / "ml"))
         import compare_c
