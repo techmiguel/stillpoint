@@ -3,17 +3,20 @@
 Todo lo que no depende del SDK está en `firmware/src/` y se prueba en el PC
 contra la referencia Python (`python -m unittest discover -s ml/tests`). Esta
 carpeta contiene solo la capa que **sí** depende del SDK de Silicon Labs y que
-**no se ha compilado todavía**, porque el PC de desarrollo no tiene el SDK. Se
-compila y prueba en la fase F2 con el kit.
+**no se ha compilado todavía con el SDK real**, porque el PC de desarrollo no lo
+tiene. Los ficheros C (`radar_port.c`, `diag_uart.c`) pasan `gcc -fsyntax-only
+-Wall -Wextra` contra cabeceras simuladas con las firmas del SDK y del driver
+de Infineon; eso descarta errores de tipos y de nombres propios, no
+discrepancias con las firmas reales. Se compila y prueba en la fase F2 con el kit.
 
 | Fichero | Qué hace | Estado |
 |---|---|---|
-| `radar_port.c` | ganchos de plataforma del driver de Infineon (SPI, CS, RST, retardo), interrupción de FIFO, tarea de radar | sin compilar |
+| `radar_port.c` | ganchos de plataforma del driver de Infineon (SPI, CS, RST, retardo), interrupción de FIFO, tarea de radar | comprobación sintáctica |
 | `radar_settings_check.h` | impide compilar con un `radar_settings.h` distinto de la configuración v1 | sin compilar |
 | `radar_pins.h` | pines del radar | revisar con el kit / esquema |
-| `matter_bridge.cpp` | `rf_outputs_t` → atributos Matter, con límite de 2 informes/s salvo alarmas | sin compilar |
+| `matter_bridge.cpp` | `rf_outputs_t` → atributos Matter (EP1–6 y clúster de fabricante, con `ContractVersion` y `ModelHash`), con límite de 2 informes/s salvo alarmas | sin compilar; los accesores `Radar60Presence::…` los genera ZAP a partir del XML |
 | `app_radar_init.cpp` | arranque desde `AppTask::AppInit` | sin compilar |
-| `diag_uart.c` | registros del contrato por UART con COBS (`tools/diag_reader.py`) | COBS probado en PC |
+| `diag_uart.c` | registros del contrato por UART con COBS (`tools/diag_reader.py`) | COBS probado en PC; comprobación sintáctica |
 | `radar60_cluster.xml` | clúster de fabricante para ZAP | sin validar en ZAP |
 
 ## Pasos (F2)

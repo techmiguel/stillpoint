@@ -1,7 +1,10 @@
 # 09 · Hardware (rev A, fase F4)
 
-La placa se diseña **después** de cerrar F2 con kits. Este documento fija
-desde ahora los requisitos que el esquema debe cumplir.
+El esquema rev A y la PCB se han adelantado en paralelo a F1–F2 para tener
+la placa lista cuando los kits validen la arquitectura; **no se pide a
+fábrica antes de cerrar F2**, porque cualquier cambio de pines, reloj o
+alimentación que salga de los kits se incorpora primero aquí. Este documento
+fija los requisitos que el esquema cumple y el estado del diseño.
 
 ## Datos verificados en la hoja de datos del BGT60TR13C (v2.4.6)
 
@@ -47,7 +50,45 @@ desde ahora los requisitos que el esquema debe cumplir.
   blindajes, cobre) en el cono de ±60° delante de las antenas.
 - Dimensiones objetivo: placa redonda Ø 60 mm, 4 capas.
 
-## Puntos de prueba (obligatorios)
+## Estado de la PCB rev A
+
+Hecho (KiCad 10, `hardware/`): esquema con ERC sin errores, PCB sincronizada
+con el esquema, contorno circular de Ø 60 mm y colocación de la cara superior
+(MGM260P con la antena de 2,4 GHz hacia el borde, USB-C vertical, LDO, CP2102N,
+traductores de nivel, SWD, pulsadores y puntos de prueba).
+
+Pendiente, en este orden (requiere KiCad 10 con DRC; no se hace a mano sobre
+el fichero porque el BGA de 0,5 mm y la zona de 60 GHz no admiten errores
+sin verificación):
+
+1. **Cara inferior**, mirando al suelo: U1 (BGT60TR13C) centrado en la ventana
+   del radomo según `mechanical/cad/comprobaciones.json`; Y1 (80 MHz) pegado a
+   OSC_CLK con R4 (22 Ω) en serie junto a Y1; desacoplos por bola
+   C5–C17 a ≤ 1 mm de cada bola; FB1–FB3 (de +1V8_RAD a los raíles RF, A y D)
+   y C22/C23 (desacoplo de 3,3 V en el lado del radar); R5/R6, polarizaciones
+   a 1,8 V de CS_N y DIO3 junto a U1; D1 (LED RGB) junto al borde, visible desde abajo. Hoy estos 24
+   componentes siguen fuera del contorno.
+2. **Apilado de 4 capas** con control de impedancia (L1 señal, L2 GND
+   continuo, L3 alimentación, L4 señal/radar) tomando del fabricante el
+   apilado que pida la nota de aplicación de Infineon. Nada de cobre, vías ni
+   serigrafía en el cono de ±60° delante de las antenas de U1, salvo lo que la
+   huella de referencia de Infineon prevea.
+3. **Fan-out del BGA**: vía en pad rellena y tapada (VIPPO) o perro-hueso
+   según el paso de 0,5 mm y las reglas del fabricante elegido; comprobar
+   antes el coste de VIPPO en JLCPCB/PCBWay.
+4. **Rutado**: OSC_CLK lo más corto posible y sin cruzar divisiones del plano;
+   SPI del radar (≤ 50 MHz) por L4 sobre GND continuo con la longitud
+   igualada de forma grosera; USB D+/D− como par diferencial de 90 Ω; raíles de
+   1,8 V del radar en estrella desde U4 a través de las ferritas.
+5. **Zonas**: GND en L2 sin cortes bajo U1 y bajo la antena del MGM260P (que
+   necesita además su zona de exclusión de cobre en todas las capas según la
+   hoja de datos del módulo); costura de vías de GND en el borde.
+6. **DRC** sin errores con las reglas del fabricante, revisión 3D contra
+   `mechanical/cad/carcasa.step` (altura libre 8,4 mm sobre la placa).
+7. **Fabricación**: Gerber, taladros, BOM y posiciones; verificar existencias
+   del BGT60TR13C y del MGM260P en el servicio de montaje.
+
+
 
 | TP | Señal | Para qué |
 |---|---|---|
