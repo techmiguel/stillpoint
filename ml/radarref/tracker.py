@@ -170,7 +170,8 @@ class Tracker:
         for o in self.tracks:
             if o is tr or not o.confirmed or len(o.vr_hist) < 8:
                 continue
-            b = np.array(o.vr_hist)[-len(a):]
+            n = min(len(a), len(o.vr_hist))
+            a, b = np.array(tr.vr_hist)[-n:], np.array(o.vr_hist)[-n:]
             if (np.std(a) > 0.05 and np.std(b) > 0.05 and np.corrcoef(a, b)[0, 1] > 0.9
                     and self._range(tr) > self._range(o) + 0.3):
                 return True
