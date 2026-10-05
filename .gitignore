@@ -4,3 +4,4 @@ ml/data/
 firmware/build/
 # los datos reales nunca se versionan aquí
 data_real/
+firmware/build/
