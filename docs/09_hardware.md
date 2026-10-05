@@ -3,6 +3,25 @@
 La placa se diseña **después** de cerrar F2 con kits. Este documento fija
 desde ahora los requisitos que el esquema debe cumplir.
 
+## Datos verificados en la hoja de datos del BGT60TR13C (v2.4.6)
+
+- Encapsulado PG-VF2BGA-40-1: 6,5 × 5 × 0,9 mm, 40 bolas de 0,3 mm a paso
+  0,5 mm (rejilla A–M × 1–9: perímetro más B3, B4 y B8; no hay M8). Antenas en
+  la cara superior del chip: el radar va en la **cara inferior** de la placa,
+  mirando al suelo.
+- **E/S a 1,8 V (máximo absoluto 2 V)**: con el MCU a 3,3 V hacen falta
+  traductores de nivel en CLK, DI, CS_N, DIO3 (reset), DO e IRQ.
+- Alimentación: VDDD, VDDA, VDDRF, VDDVCO y VDDPLL a 1,8 V (201 mA típ.,
+  230 mA máx. en activo); VDDLF a 3,3 V; VAREF (1,2 V) es una salida que solo
+  lleva condensador de desacoplo.
+- OSC_CLK: reloj CMOS de 1,8 V a 80 MHz (75–85 MHz; 78 MHz no permitido),
+  jitter de fase ≤ 1 ps: oscilador XO, no cristal.
+- Reset por hardware obligatorio tras el arranque: con CS_N = 1, DIO3 hace 1→0→1 (≥ 100 ns).
+- FIFO de 8192 palabras de 24 bits (dos muestras de 12 bits por palabra); SPI hasta 50 MHz.
+- Potencia TX máxima (#31) = +5 dBm; ganancia de antena 3,5 dBi típ. (5 máx.):
+  **PIRE máx. ≈ 10 dBm**, por debajo de los 20 dBm de la UE.
+- Separación entre antenas RX: 2,5 mm (λ/2), coherente con la referencia.
+
 ## BOM preliminar
 
 | Ref | Pieza | Función | Notas |
