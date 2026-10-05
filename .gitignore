@@ -6,3 +6,7 @@ firmware/build/
 data_real/
 firmware/build/
 mechanical/stl/
+hardware/.history/
+hardware/*-backups/
+hardware/~*.lck
+hardware/fp-info-cache
