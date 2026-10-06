@@ -95,6 +95,36 @@ anterior la comprobación falla).
 4. Pedir solo tras cerrar F2: cualquier cambio de pines o alimentación que salga
    de los kits se incorpora antes aquí.
 
+## Balance de alimentación (estimado; se mide en F2)
+
+U3 (AP2112K-3.3, SOT-23-5) baja de 5 V a 3,3 V todo el consumo, incluido el
+del radar a través de U4 (AP2112K-1.8). Estimación con el ciclo de trama v1
+(32 chirps de 350 µs cada 100 ms, más ~2 ms de arranque y lectura del FIFO:
+13 % de ciclo):
+
+| Caso | 3V3 pico | U3 pico | 3V3 medio | U3 medio |
+|---|---|---|---|---|
+| Thread a +20 dBm | 416 mA | 0,71 W | 60 mA | 0,10 W (≈ +26 °C) |
+| Thread a +10 dBm | 273 mA | 0,46 W | 59 mA | 0,10 W (≈ +25 °C) |
+
+U4 disipa 0,34 W durante 13 ms en cada trama y unos 52 mW de media.
+
+Supuestos:
+- radar a 230 mA en activo (máximo de la hoja de datos) y 5 mA en reposo;
+- MGM260P (módulo de 20 dBm: 162 mA a +20 dBm, 19 mA a +10 dBm según Silicon
+  Labs) con un 1 % de tiempo en transmisión y 10 mA con la CPU y la recepción;
+- CP2102N a 10 mA y LED encendido;
+- θJA de 250 °C/W para el SOT-23-5.
+
+Conclusión: la disipación media es aceptable y los picos duran milisegundos.
+No se cambia el hardware, con dos condiciones:
+1. Limitar la potencia de Thread a +10 dBm. En una vivienda basta para la malla
+   y reduce el pico de 5 V a menos de 0,3 A, lejos de la corriente de
+   mantenimiento del fusible rearmable (que cae con la temperatura).
+2. Medir en F2 la corriente media y la temperatura de U3/U4 dentro de la
+   carcasa cerrada. Si U3 supera 85 °C, sustituirlo por un regulador
+   conmutado de 3,3 V.
+
 ## Puntos de prueba (obligatorios)
 
 | TP | Señal | Para qué |

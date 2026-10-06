@@ -15,7 +15,7 @@ se calcula en el aparato y se publica por **Matter sobre Thread**, sin nube ni c
 | F0 · Criterios numéricos, alcance, interfaces, plan, riesgos | ✅ [docs/](docs) |
 | F0 · Contrato de características firmware ↔ entrenamiento (v1, 66 B) | ✅ [contracts/features_v1.yaml](contracts/features_v1.yaml) |
 | F0 · Cadena de referencia Python: simulador FMCW → DSP → seguimiento → características → modelo int8 → decisión | ✅ [ml/radarref](ml/radarref) |
-| F0 · Pruebas de regresión de los fallos conocidos (oclusión, ventilador, espejo, latencia) | ✅ 34 pruebas en verde |
+| F0 · Pruebas de regresión de los fallos conocidos (oclusión, ventilador, espejo, latencia) | ✅ 35 pruebas en verde |
 | Firmware C portable: DSP, seguimiento, inferencia int8, decisión, aplicación completa | ✅ idéntico a la referencia de punta a punta; gcc y clang con `-Werror`, ASan/UBSan limpios; CI en [.github/workflows](.github/workflows/ci.yml) |
 | F1 · Captura con el kit de evaluación y herramientas del banco ([ml/capture_kit.py](ml/capture_kit.py), [bench/](bench)) | ✅ código; ⏳ falta capturar en salas reales |
 | F2 · Puerto EFR32MG26: driver del radar, Matter, diagnóstico por UART ([firmware/port/efr32mg26](firmware/port/efr32mg26)) | ✅ código (comprobado contra cabeceras simuladas); ⏳ compilar con el SDK de Silicon Labs y probar con el kit |
@@ -79,6 +79,12 @@ python train.py
 
 ```bash
 python eval_events.py
+```
+
+Configuración de la sala del dispositivo (desde la raíz; requiere pyserial):
+
+```bash
+python tools/room_cfg.py tools/sala_ejemplo.json --puerto COM7
 ```
 
 Tras cambiar el contrato (desde la raíz):

@@ -8,8 +8,9 @@ estandariza va en un clúster de fabricante, opcional para el usuario.
 
 - Thread, dispositivo FTD con capacidad de router (alimentado por cable: refuerza la malla).
 - Puesta en marcha por BLE con código QR / código manual impreso en la carcasa.
-- Sin cuenta ni nube. Configuración (zonas, puertas, altura) por clúster de
-  fabricante o, en v1, por UART/USB con una herramienta local.
+- Sin cuenta ni nube. Configuración (zonas, puertas, altura) en v1 por UART/USB
+  con `tools/room_cfg.py` (JSON → bloque v1 validado con CRC, guardado en NVM3);
+  por el clúster de fabricante queda para v2.
 
 ## Endpoints
 
