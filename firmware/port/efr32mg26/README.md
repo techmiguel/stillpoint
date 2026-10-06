@@ -29,8 +29,9 @@ discrepancias con las firmas reales. Se compila y prueba en la fase F2 con el ki
    `gpiointerrupt`, `sleeptimer`, `iostream_eusart` o `iostream_usart` para el
    diagnóstico (3 Mbaud, lectura sin bloqueo) y `nvm3_default`. Comprobar que la
    clave NVM3 de `cfg_store.c` (0x0F600) no cae en el rango reservado por Matter.
-   Potencia de Thread limitada a +10 dBm (balance de alimentación en
-   `docs/09_hardware.md`).
+   El módulo de la placa propia es el MGM260PB22VNA5 (+10 dBm); con el kit de
+   +20 dBm, limitar la potencia a +10 dBm para reproducir el mismo consumo
+   (balance en `docs/09_hardware.md`).
 4. Añadir al proyecto `firmware/src/*.c` (excepto pruebas), esta carpeta y la
    biblioteca `sensor-xensiv-bgt60trxx` de Infineon (Apache-2.0) sin su `*_mtb.c`.
 5. Exportar `radar_settings.h` desde **Infineon Radar Fusion GUI** con:

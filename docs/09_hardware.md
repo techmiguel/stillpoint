@@ -25,20 +25,20 @@ fija los requisitos que el esquema cumple y el estado del diseño.
   **PIRE máx. ≈ 10 dBm**, por debajo de los 20 dBm de la UE.
 - Separación entre antenas RX: 2,5 mm (λ/2), coherente con la referencia.
 
-## BOM preliminar
+## BOM rev A (principales; completa en `hardware/fab/revA/bom.csv`)
 
 | Ref | Pieza | Función | Notas |
 |---|---|---|---|
-| U1 | Infineon BGT60TR13C | radar 60 GHz, 1 TX / 3 RX, antenas en encapsulado | huella, apilado y reglas de la nota de aplicación de Infineon; copiar la disposición de su placa de referencia |
-| U2 | Silicon Labs EFR32MG26 | MCU + Thread + BLE + MVP | módulo o chip; un módulo certificado simplifica la parte de 2,4 GHz |
-| Y1 | 80 MHz (según hoja de datos del BGT60) | reloj del radar | lo más cerca posible de U1 |
-| U3 | LDO de bajo ruido 1,8 V | alimentación del radar | ruido de alimentación ⇒ espurios en el espectro: elegir según recomendación de Infineon |
-| U4 | LDO 3,3 V ≥ 500 mA | MCU y periféricos | |
-| U5 | CP2102N | USB datos ⇄ UART | captura de registros y de tramas reducidas a 3 Mbaud |
-| J1 | USB-C receptáculo 16 pines | alimentación 5 V + datos USB 2.0 | resistencias CC 5,1 kΩ; ESD en D+/D-; fusible rearmable |
-| J2 | Tag-Connect TC2030 o 2×5 1,27 mm | SWD + reset + UART | accesible con la carcasa abierta |
-| D1 | LED RGB | estado: puesta en marcha, error de radar, caída | apagable por configuración (dormitorio) |
-| SW1 | pulsador | puesta en marcha / restablecer | accesible con clip |
+| U1 | Infineon BGT60TR13C | radar 60 GHz, 1 TX / 3 RX, antenas en encapsulado | cara inferior; pads Ø0,275 según la placa de referencia de Infineon |
+| U2 | Silicon Labs MGM260PB22VNA5 | EFR32MG26, Thread/Matter, +10 dBm, antena integrada | mismo encapsulado y patillaje que la variante de +20 dBm (MGM260PB32VNA5) |
+| U3 | Diodes AP2112K-3.3 | 3,3 V (MCU, CP2102N, VDDLF) | 600 mA; θJA 184 °C/W |
+| U4 | TI TPS7A2018PDBVR | 1,8 V del radar, 7 µVrms | mismo patillaje SOT-23-5 que el AP2112K; habilitado por el MCU |
+| Y1 | Kyocera KC2520K, 80 MHz, 1,8 V | reloj del radar, cuarzo, jitter ≤ 1 ps | familia K de la placa de referencia (KC2016K); patrón 2520 estándar |
+| U5 | Silicon Labs CP2102N-A02-GQFN24 | USB ⇄ UART de diagnóstico | regulador interno sin usar (fig. 2.3) |
+| U6 | ST USBLC6-2SC6 | ESD de D+/D- y VBUS | |
+| U7, U8 | TI SN74AVC4T245PW | traductores 3,3 V ⇄ 1,8 V del radar | aislamiento de VCC: alta impedancia con el radar apagado |
+| J1 | G-Switch GT-USB-7051A | USB-C vertical | 7,5 mm sobre la placa |
+| J2 | Tag-Connect TC2030-NL | SWD + reset + UART | solo pads |
 
 ## Requisitos del esquema
 
@@ -49,6 +49,38 @@ fija los requisitos que el esquema cumple y el estado del diseño.
 - Radar orientado al centro de la ventana del radomo; nada metálico (tornillos,
   blindajes, cobre) en el cono de ±60° delante de las antenas.
 - Dimensiones objetivo: placa redonda Ø 60 mm, 4 capas.
+
+## Verificación con las hojas de datos (docs/referencias)
+
+Datos contrastados con los PDF del fabricante y cambios que provocaron:
+
+| Componente | Comprobado | Resultado |
+|---|---|---|
+| BGT60TR13C (hoja v2.4.9, tabla 1) | 40 bolas y funciones | coincide con el esquema (A1/A2 VSSD, K1 VSSA, 20 VSSRF, DIO3 = reset) |
+| BGT60TR13C (shield, fig. 5c) | patrón de pads | orientación correcta (rotación sin espejo); **pads Ø0,25 → Ø0,275** |
+| BGT60TR13C (§8.1) | VAREF | **C16 100 nF → 470 nF** de baja ESR |
+| BGT60TR13C (tabla 5) | ruido de alimentación ≤ 20 µVpp en 20-700 kHz en cada raíl | **U4 AP2112K-1.8 (50 µVrms) → TPS7A2018 (7 µVrms)**; desacoplos como la placa de referencia: **C8 → 10 µF, C9/C10 → 1 µF, C12 → 10 µF, C17 → 1 µF**; VDDLF (≤ 0,5 mA) con filtro RC: **FB4 → R13 47 Ω y C15 → 10 µF** (corte < 1 kHz, caída 23 mV) |
+| BGT60TR13C (tabla 5) | reloj: 75-85 MHz CMOS 1,8 V, jitter de fase 1 ps (12 kHz-20 MHz) | el **SiT8008 MEMS da 1,3 ps típ. / 2 ps máx.: no cumple**. Pasa a cuarzo **Kyocera KC2520K** (1,0 ps; 0,5 ps en la versión de bajo ruido), con el mismo patrón 2520 y patillaje |
+| Shield (§3.4) | serie del reloj | **R4 22 Ω → 150 Ω** (valor de Infineon). Se ajusta en F2: si hay pico a corta distancia en el mapa distancia-Doppler, subirla; si empeora el ruido de fase, bajarla |
+| Shield (fig. 6) | filtros π por dominio | iguales en RF, A, D y LF. Diferencia aceptada: PLL y VCO comparten el filtro de RF (Infineon los separa); se vigila el ruido de fase en F2 |
+| MGM260P (hoja rev 1.1) | patillaje de 36 pads | coincide con el esquema (VDD 15, RESETn 31, SPI en PC00-PC03, UART en PA05/PA06) |
+| MGM260P (fig. 8.2) | patrón de soldadura y zona de antena | coinciden: columnas a 11,30, pads 2,4 × 0,6, zona sin cobre 8,8 × 4,8 mm; módulo en el centro de un borde y plano de 60 mm (pide 50-60) |
+| MGM260P (tabla 2.1) | código de pedido | el esquema decía MGM260PB32VNA, incompleto; **pasa a MGM260PB22VNA5 (+10 dBm)**, que fija por hardware el límite de potencia del balance |
+| MGM260P (fig. 8.1) | altura | 2,15 nominal, 2,35 máx.: modelo 3D a 2,35 |
+| GT-USB-7051A (plano) | altura | 7,50 mm: modelo 3D actualizado; la comprobación mecánica sigue en 0 mm³ |
+| AP2112 | θJA SOT-23-5 | 184 °C/W (se suponían 250) |
+| SN74AVC4T245 | patillaje, DIR/OE, entradas sin usar | correcto: DIR alto A→B, OE activo bajo; 2B1/2B2 de U8 a GND como exige TI |
+| CP2102N (fig. 2.3) | alimentación sin regulador, RSTb, VBUS | correcto (VREGIN = VDD = 3,3 V, 1 kΩ en RSTb, divisor 22,1/47,5 kΩ); **C25 1 µF → 4,7 µF** (pide 4,7 µF + 0,1 µF) |
+| USBLC6-2 | patillaje | correcto |
+
+Riesgos que quedan para F2, sin solución de diseño posible antes de medir:
+- **Plástico junto a la antena del módulo.** Silicon Labs pide evitar dieléctricos
+  cerca de la antena. La pared de la carcasa (2 mm de PLA) queda a unos 1,5 mm
+  del borde del módulo. Medir el RSSI con y sin carcasa; si se pierden más de
+  3 dB, adelgazar la pared en ese sector.
+- **Temperatura del radar.** La cara del chip debe quedar por debajo de 70 °C.
+  Disipa unos 60 mW de media, pero hay que medirla con su sensor interno dentro
+  de la carcasa cerrada.
 
 ## Estado de la PCB rev A
 
@@ -66,12 +98,12 @@ avisos: U7/U8 difieren de la biblioteca porque su marca de pin 1 se desplazó
 | Radar U1 | cara inferior, centrado en la ventana del radomo (100, 100), fila de señales hacia los traductores; GND sólido en In2 bajo el encapsulado |
 | Fan-out del BGA | sin vía en pad: las bolas de señal y alimentación están en el anillo exterior; pistas de 0,15-0,25 mm; B3/B4/B8 unidas a su vecina de GND; vías de GND dentro del anillo solo donde la cara superior está libre |
 | Desacoplos del radar | cada bola de alimentación va directa a su condensador (≤ 3 mm), sin vía entre ambos; ferritas y bulk de cada raíl en la cara inferior |
-| Reloj 80 MHz | M2 → R4 (22 Ω) → Y1 entero en B.Cu: 6,3 mm |
+| Reloj 80 MHz | M2 → R4 (150 Ω, ajustable en F2) → Y1 entero en B.Cu: 6,3 mm |
 | SPI del radar | 13-17 mm por traza, vías escalonadas bajo U8 hacia los traductores |
 | USB (velocidad completa) | D+/D- de 0,2 mm; protector ESD U6 con vía de GND en su pad |
 | MGM260P | antena hacia el borde, sin cobre ni vías en ninguna capa bajo ella |
 | GND | rellenos en las 4 capas, ~490 vías de cosido y una vía junto a cada pad de GND, todas validadas con la DRC |
-| Mecánica | sin componentes sobre los apoyos de la carcasa; componente más alto 7,0 mm arriba (J1) y 1,19 mm abajo |
+| Mecánica | sin componentes sobre los apoyos de la carcasa; componente más alto 7,5 mm arriba (J1) y 1,19 mm abajo |
 
 Comprobaciones mecánicas con la placa montada (STEP exportado de KiCad, ver
 `mechanical/cad/comprobaciones.json`): interferencia placa-carcasa, placa-tapa
@@ -80,50 +112,40 @@ funda de 12,4 × 6,6 mm colocada sobre el J1 real pasa por la tapa; el paso de
 cable se movió a la vertical de J1, a 16 mm del centro (con el paso centrado
 anterior la comprobación falla).
 
-**Pendiente antes de pedir la placa** (no se puede cerrar desde aquí):
+**Pendiente antes de pedir la placa**:
 
-1. Contrastar la zona del radar con la guía de diseño de hardware de Infineon
-   para el BGT60TR13C (no disponible en este entorno): reglas de cobre bajo el
-   encapsulado, apilado recomendado y posición respecto al radomo. La placa
-   cumple las reglas generales (GND continuo debajo, nada en el cono), pero no
-   se ha verificado contra esa guía.
-2. Confirmar en las hojas de datos la altura del MGM260P (2,2 mm supuesto) y del
-   USB-C GT-USB-7051A (7,0 mm supuesto): son envolventes aproximadas.
-3. Elegir piezas en LCSC (columna `LCSC` de `bom.csv`), comprobar existencias
-   del BGT60TR13C y del MGM260P, y revisar las rotaciones del CPL en el visor
-   del fabricante. El montaje es a doble cara.
-4. Pedir solo tras cerrar F2: cualquier cambio de pines o alimentación que salga
+1. Elegir piezas en LCSC (columna `LCSC` de `bom.csv`), comprobar existencias
+   del BGT60TR13C, el MGM260P, el TPS7A2018 y el KC2520K, y revisar las
+   rotaciones del CPL en el visor del fabricante. El montaje es a doble cara.
+2. Confirmar con la hoja del KC2520K elegido (código exacto de 80 MHz y 1,8 V)
+   que su patrón coincide con la huella 2520 actual (pads de 1,1 × 1,0 a ±0,95 × ±0,75).
+3. Pedir solo tras cerrar F2: cualquier cambio de pines o alimentación que salga
    de los kits se incorpora antes aquí.
 
 ## Balance de alimentación (estimado; se mide en F2)
 
-U3 (AP2112K-3.3, SOT-23-5) baja de 5 V a 3,3 V todo el consumo, incluido el
-del radar a través de U4 (AP2112K-1.8). Estimación con el ciclo de trama v1
-(32 chirps de 350 µs cada 100 ms, más ~2 ms de arranque y lectura del FIFO:
-13 % de ciclo):
+U3 (AP2112K-3.3, SOT-23-5) baja de 5 V a 3,3 V todo el consumo, incluido el del
+radar a través de U4. Ciclo de trama v1: 32 chirps de 350 µs cada 100 ms, más
+~2 ms de arranque y lectura del FIFO (13 % de ciclo). Con el MGM260PB22VNA5
+(+10 dBm):
 
-| Caso | 3V3 pico | U3 pico | 3V3 medio | U3 medio |
+| | 3V3 pico | U3 pico | 3V3 medio | U3 medio |
 |---|---|---|---|---|
-| Thread a +20 dBm | 416 mA | 0,71 W | 60 mA | 0,10 W (≈ +26 °C) |
-| Thread a +10 dBm | 273 mA | 0,46 W | 59 mA | 0,10 W (≈ +25 °C) |
+| Estimación | 273 mA | 0,46 W | 59 mA | 0,10 W (≈ +18 °C con 184 °C/W) |
 
-U4 disipa 0,34 W durante 13 ms en cada trama y unos 52 mW de media.
+U4 (TPS7A2018) disipa 0,34 W durante 13 ms en cada trama y unos 52 mW de media.
 
-Supuestos:
-- radar a 230 mA en activo (máximo de la hoja de datos) y 5 mA en reposo;
-- MGM260P (módulo de 20 dBm: 162 mA a +20 dBm, 19 mA a +10 dBm según Silicon
-  Labs) con un 1 % de tiempo en transmisión y 10 mA con la CPU y la recepción;
-- CP2102N a 10 mA y LED encendido;
-- θJA de 250 °C/W para el SOT-23-5.
+Supuestos (hojas de datos):
+- radar a 230 mA en activo (máximo, tabla 6) y 2,8 mA en reposo;
+- MGM260P: 19,4 mA transmitiendo a +10 dBm (1 % del tiempo), 6 mA en
+  recepción y unos 4 mA de CPU a 80 MHz;
+- CP2102N a 10 mA y LED encendido.
 
-Conclusión: la disipación media es aceptable y los picos duran milisegundos.
-No se cambia el hardware, con dos condiciones:
-1. Limitar la potencia de Thread a +10 dBm. En una vivienda basta para la malla
-   y reduce el pico de 5 V a menos de 0,3 A, lejos de la corriente de
-   mantenimiento del fusible rearmable (que cae con la temperatura).
-2. Medir en F2 la corriente media y la temperatura de U3/U4 dentro de la
-   carcasa cerrada. Si U3 supera 85 °C, sustituirlo por un regulador
-   conmutado de 3,3 V.
+El pico de 5 V queda por debajo de 0,3 A, lejos de la corriente de
+mantenimiento del fusible rearmable. En F2 hay que medir la corriente media y
+la temperatura de U3 y U4 dentro de la carcasa cerrada. Si U3 supera 85 °C, se
+sustituye por un regulador conmutado de 3,3 V. En ese caso, VDDLF sigue
+protegida por su filtro RC.
 
 ## Puntos de prueba (obligatorios)
 
