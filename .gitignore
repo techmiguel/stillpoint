@@ -10,3 +10,4 @@ hardware/.history/
 hardware/*-backups/
 hardware/~*.lck
 hardware/fp-info-cache
+*.FCBak

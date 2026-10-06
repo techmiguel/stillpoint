@@ -6,6 +6,11 @@ Ejecutar con el intérprete de FreeCAD (sin interfaz):
 Salidas en mechanical/cad/: radar60.FCStd (documento editable), carcasa/tapa/
 cupon .step y .stl, y comprobaciones.json. Las comprobaciones son aserciones:
 si una cota no cumple, el script falla y no exporta.
+
+Si existe mechanical/cad/placa_revA.step (la placa montada, exportada desde
+KiCad con hardware/scripts/fabricacion.sh), se comprueba además el conjunto
+real: componentes contra carcasa, tapa y cono de las antenas, y el paso de la
+clavija USB-C por la tapa.
 """
 import json
 import math
@@ -39,6 +44,9 @@ H = Z_PCB + H_INNER                          # altura total de la carcasa
 LID_T, LID_EXTRA = 2.4, 6.0
 LIP_H, LIP_W = 4.0, 1.2
 CABLE = (14.0, 9.0)                          # paso del conector USB-C vertical + funda
+CABLE_XY = (0.0, -16.0)                      # sobre J1: KiCad (100, 116) -> carcasa (x - 100, 100 - y)
+PLUG = (12.4, 6.6)                           # funda típica de una clavija USB-C (mayor que la mayoría)
+PCB_STEP = os.path.join(OUT, "placa_revA.step")
 SCREW_D, CSK_D = 4.2, 8.4
 FOV_DEG = 60.0                               # semiángulo útil de las antenas
 
@@ -69,7 +77,8 @@ def carcasa():
 def tapa():
     R = R_OUT + LID_EXTRA
     plate = cyl(R, LID_T)
-    plate = plate.cut(Part.makeBox(CABLE[0], CABLE[1], LID_T + 2, V(-CABLE[0] / 2, -CABLE[1] / 2, -1)))
+    plate = plate.cut(Part.makeBox(CABLE[0], CABLE[1], LID_T + 2,
+                                   V(CABLE_XY[0] - CABLE[0] / 2, CABLE_XY[1] - CABLE[1] / 2, -1)))
     for sx in (-1, 1):
         x = sx * (R - 4.5)
         plate = plate.cut(Part.makeCylinder(SCREW_D / 2, LID_T + 2, V(x, 0, -1)))
@@ -126,6 +135,51 @@ def comprobar(c, t, pcb, chip):
     res["radomo_mm"] = round(T_RAD, 3)
     res["altura_total_mm"] = round(H + LID_T, 2)
     res["diametro_mm"] = round(2 * R_OUT, 2)
+    if os.path.exists(PCB_STEP):
+        res.update(comprobar_conjunto(c, t_mounted))
+    return res
+
+
+def placa_real():
+    """Placa montada (KiCad, origen en el centro): cara inferior de la placa en Z_PCB."""
+    sh = Part.Shape()
+    sh.read(PCB_STEP)
+    bb = sh.BoundBox
+    # el exportador de KiCad deja la cara inferior de la placa en z = 0
+    sh.translate(V(0, 0, Z_PCB))
+    return sh, bb
+
+
+def comprobar_conjunto(c, t_mounted):
+    res = {}
+    asm, bb = placa_real()
+    solids = asm.Solids
+    v_c = sum(s.common(c).Volume for s in solids)
+    v_t = sum(s.common(t_mounted).Volume for s in solids)
+    cone = cono_fov()
+    # el propio radar toca el vértice del cono (sus antenas están en ese plano): se excluye
+    v_fov = sum(s.common(cone).Volume for s in solids if s.BoundBox.ZMin > Z_ANT - 1e-3 and
+                not (abs(s.BoundBox.Center.x) < 4 and abs(s.BoundBox.Center.y) < 4 and s.BoundBox.ZMax <= Z_PCB + 1e-3))
+    # la clavija se coloca sobre el J1 real (el componente más alto de la cara superior), no sobre el agujero
+    j1 = max(solids, key=lambda s: s.BoundBox.ZMax).BoundBox
+    plug = Part.makeBox(PLUG[0], PLUG[1], 30.0,
+                        V(j1.Center.x - PLUG[0] / 2, j1.Center.y - PLUG[1] / 2, j1.ZMax))
+    res["usb_c_centro_mm"] = [round(j1.Center.x, 2), round(j1.Center.y, 2)]
+    v_plug = plug.common(t_mounted).Volume
+    top = max(s.BoundBox.ZMax for s in solids) - (Z_PCB + PCB_T)
+    bottom = (Z_PCB) - min(s.BoundBox.ZMin for s in solids)
+    res.update({
+        "conjunto_placa_carcasa_mm3": round(v_c, 4),
+        "conjunto_placa_tapa_mm3": round(v_t, 4),
+        "conjunto_componentes_en_cono_FOV_mm3": round(v_fov, 4),
+        "clavija_usb_contra_tapa_mm3": round(v_plug, 4),
+        "componente_mas_alto_cara_superior_mm": round(top, 2),
+        "componente_mas_alto_cara_inferior_mm": round(bottom, 2),
+    })
+    assert v_c < 1e-3, f"la placa montada interfiere con la carcasa ({v_c:.3f} mm3)"
+    assert v_t < 1e-3, f"la placa montada interfiere con la tapa ({v_t:.3f} mm3)"
+    assert v_fov < 1e-3, "hay componentes en el campo de visión de las antenas"
+    assert v_plug < 1e-3, "la clavija USB-C no pasa por la tapa"
     return res
 
 

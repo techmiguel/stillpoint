@@ -7,6 +7,16 @@
  "radomo_mm": 1.478,
  "altura_total_mm": 23.73,
  "diametro_mm": 64.8,
+ "usb_c_centro_mm": [
+  0.0,
+  -16.0
+ ],
+ "conjunto_placa_carcasa_mm3": 0.0,
+ "conjunto_placa_tapa_mm3": 0.0,
+ "conjunto_componentes_en_cono_FOV_mm3": 0.0,
+ "clavija_usb_contra_tapa_mm3": 0.0,
+ "componente_mas_alto_cara_superior_mm": 7.0,
+ "componente_mas_alto_cara_inferior_mm": 1.19,
  "volumen_cm3": {
   "carcasa": 12.81,
   "tapa": 11.6
