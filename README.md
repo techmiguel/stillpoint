@@ -8,21 +8,30 @@ se calcula en el aparato y se publica por **Matter sobre Thread**, sin nube ni c
 > **No es un dispositivo médico.** La detección de caídas es una notificación,
 > nunca el único medio de seguridad de una persona.
 
-## Estado: fase F0 cerrada (definición + cadena de referencia)
+## Estado: todo lo que se puede hacer sin hardware, hecho; pendiente de banco
 
 | Bloque | Estado |
 |---|---|
-| Criterios numéricos, alcance, interfaces, plan, riesgos | ✅ [docs/](docs) |
-| Contrato de características firmware ↔ entrenamiento (v1, 66 B) | ✅ [contracts/features_v1.yaml](contracts/features_v1.yaml) |
-| Cadena de referencia Python: simulador FMCW → DSP → seguimiento → características → modelo int8 → decisión | ✅ [ml/radarref](ml/radarref) |
-| Pruebas de regresión de los fallos conocidos (oclusión, ventilador, espejo, latencia) | ✅ 22 pruebas en verde |
-| Código C portable: registro del contrato, decisión con fallo seguro, límites RF, guardia de modelo | ✅ compila; ⏳ falta ejecutar `make -C firmware test` en PC |
-| Captura con kit de evaluación (F1), firmware embebido + Matter (F2) | ⏳ |
-| Campaña de datos reales, placa, radomo, banco final (F3–F5) | ⏳ |
+| F0 · Criterios numéricos, alcance, interfaces, plan, riesgos | ✅ [docs/](docs) |
+| F0 · Contrato de características firmware ↔ entrenamiento (v1, 66 B) | ✅ [contracts/features_v1.yaml](contracts/features_v1.yaml) |
+| F0 · Cadena de referencia Python: simulador FMCW → DSP → seguimiento → características → modelo int8 → decisión | ✅ [ml/radarref](ml/radarref) |
+| F0 · Pruebas de regresión de los fallos conocidos (oclusión, ventilador, espejo, latencia) | ✅ 35 pruebas en verde |
+| Firmware C portable: DSP, seguimiento, inferencia int8, decisión, aplicación completa | ✅ idéntico a la referencia de punta a punta; gcc y clang con `-Werror`, ASan/UBSan limpios; CI en [.github/workflows](.github/workflows/ci.yml) |
+| F1 · Captura con el kit de evaluación y herramientas del banco ([ml/capture_kit.py](ml/capture_kit.py), [bench/](bench)) | ✅ código; ⏳ falta capturar en salas reales |
+| F2 · Puerto EFR32MG26: driver del radar, Matter, diagnóstico por UART ([firmware/port/efr32mg26](firmware/port/efr32mg26)) | ✅ código (comprobado contra cabeceras simuladas); ⏳ compilar con el SDK de Silicon Labs y probar con el kit |
+| F4 · Esquema rev A ([hardware/](hardware)) | ✅ ERC sin errores |
+| F4 · PCB rev A (4 capas, Ø 60 mm) | ✅ colocada y rutada; DRC sin errores ni diferencias con el esquema; Gerber, BOM y posiciones en [hardware/fab/revA](hardware/fab/revA) ([cómo se hizo](hardware/scripts/README.md)); ⏳ contrastar con la guía de Infineon y pedir tras F2 |
+| F4 · Mecánica: carcasa, tapa, radomo λ/2 y cupón ([mechanical/](mechanical)) | ✅ FreeCAD/STEP/STL; comprobado contra la placa montada real (0 mm³ de interferencias, clavija USB-C por la tapa); ⏳ imprimir y elegir espesor con el kit |
+| F3 · Campaña de datos con personas, F5 · banco de 30 días-sensor, F6 · publicación de métricas | ⏳ requieren hardware, voluntarios con consentimiento y tiempo de banco |
+
+Lo que falta ya no es diseño que pueda escribirse y verificarse en un PC: es
+medir con el kit, compilar con el SDK propietario, fabricar la placa y hacer la
+campaña de datos. El orden y las puertas están en [06](docs/06_plan_fases.md).
 
 Todas las cifras actuales salen de **simulación**: validan que la cadena
 funciona de extremo a extremo, no el producto. No se publican como métricas.
 
+![placa rev A](docs/img/pcb_revA_superior.png)
 ![oclusión](docs/img/escenario_occlusion.png)
 ![caída](docs/img/eventos_caida.png)
 
@@ -72,23 +81,39 @@ python train.py
 python eval_events.py
 ```
 
+Configuración de la sala del dispositivo (desde la raíz; requiere pyserial):
+
+```bash
+python tools/room_cfg.py tools/sala_ejemplo.json --puerto COM7
+```
+
 Tras cambiar el contrato (desde la raíz):
 
 ```bash
 python tools/gen_contract.py
 ```
 
+Firmware en PC (compila todo el código portable con `-Werror` y ejecuta las pruebas sin datos):
+
 ```bash
 make -C firmware test
+```
+
+Equivalencia C ↔ Python con sanitizadores (desde `ml/`):
+
+```bash
+CC="gcc -fsanitize=address,undefined -fno-sanitize-recover=all" python -m unittest tests.test_firmware
 ```
 
 ## Estructura
 
 ```
+bench/       banco de pruebas: anotación, eventos, exportación de HA, informe con IC
 contracts/   contrato de características (fuente de verdad de I2)
-docs/        ingeniería: criterios, arquitectura, plan, protocolo, banco
-firmware/    C portable + pruebas contra vectores dorados de Python
-mechanical/  radomo y carcasa paramétricos (OpenSCAD)
-ml/          cadena de referencia, simulador, entrenamiento, métricas
-tools/       generadores (cabeceras C, vectores dorados)
+docs/        ingeniería: criterios, arquitectura, plan, protocolo, banco, hardware
+firmware/    C portable + pruebas contra vectores dorados de Python; port/ = capa del SDK
+hardware/    KiCad: esquema y PCB rev A, huellas y modelos propios, scripts y fab/
+mechanical/  carcasa, tapa y radomo (FreeCAD → STEP/STL) con comprobaciones
+ml/          cadena de referencia, simulador, captura con el kit, entrenamiento, métricas
+tools/       generadores (cabeceras C, vectores dorados), lector del diagnóstico UART
 ```

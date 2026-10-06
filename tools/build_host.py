@@ -28,6 +28,7 @@ TARGETS = {
     "replay_app": (["tests/replay_app.c"], CORE + DSP + NN + APP),
     "test_bgt60": (["tests/test_bgt60.c"], ["src/bgt60_frame.c"]),
     "test_cobs": (["tests/test_cobs.c"], ["src/cobs.c"]),
+    "test_room_cfg": (["tests/test_room_cfg.c"], ["src/room_cfg.c", "src/features_pack.c", "src/cobs.c"]),
 }
 
 
@@ -64,7 +65,7 @@ def main(argv):
     names = argv or ["test_host"]
     for n in names:
         out = build(n)
-        if n in ("test_host", "test_nn"):
+        if n in ("test_host", "test_nn", "test_room_cfg"):
             r = subprocess.run([str(out)])
             if r.returncode:
                 raise SystemExit(r.returncode)

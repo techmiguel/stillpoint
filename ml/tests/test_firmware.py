@@ -1,7 +1,9 @@
 """Compila el código C del firmware en el PC y lo compara con la referencia Python."""
+import re
 import subprocess
 import sys
 import unittest
+import zlib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -9,6 +11,15 @@ sys.path.insert(0, str(ROOT / "tools"))
 sys.path.insert(0, str(ROOT / "ml"))
 
 import build_host  # noqa: E402
+
+
+class ModelHeaderTest(unittest.TestCase):
+    def test_model_hash_matches_exported_tflite(self):
+        """nn_model.h debe salir del mismo .tflite que usa la referencia (ModelHash en Matter)."""
+        h = (ROOT / "firmware/src/nn_model.h").read_text(encoding="utf-8")
+        got = int(re.search(r"#define NN_MODEL_HASH32 0x([0-9A-F]+)u", h).group(1), 16)
+        tfl = ROOT / "ml/artifacts/synth_v1/model_int8.tflite"
+        self.assertEqual(got, zlib.crc32(tfl.read_bytes()))
 
 
 def have_cc() -> bool:
@@ -80,6 +91,36 @@ class FirmwareCoreTest(unittest.TestCase):
                 self.assertEqual(dec, blob, name)
             out = list(diag_reader.records([fo.read_bytes()]))
         self.assertEqual(out, [])   # el segundo blob no son registros: se descartan, no se inventan
+
+    def test_room_config_python_and_c_agree(self):
+        """La trama de tools/room_cfg.py la entiende el firmware y el bloque de fábrica del
+        firmware lo entiende la herramienta; ambos coinciden con tools/sala_ejemplo.json."""
+        import json
+        import tempfile
+        import room_cfg
+        exe = build_host.build("test_room_cfg")
+        r = subprocess.run([str(exe)], capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stdout)
+        cfg = json.loads((ROOT / "tools/sala_ejemplo.json").read_text(encoding="utf-8"))
+        cfg["exclusiones"] = [[-0.5, 0.25, 1.0, 1.75]]
+        with tempfile.TemporaryDirectory() as d:
+            fi, fo = Path(d) / "trama.bin", Path(d) / "fabrica.bin"
+            fi.write_bytes(room_cfg.command(cfg))
+            r = subprocess.run([str(exe), str(fi), str(fo)], capture_output=True, text=True)
+            self.assertEqual(r.returncode, 0, r.stdout)
+            lines = dict(l.split(" ", 1) for l in r.stdout.strip().splitlines())
+            self.assertEqual(lines["estado"], "0")
+            self.assertEqual([float(v) for v in lines["sala"].split()], cfg["sala"])
+            self.assertEqual([float(v) for v in lines["exclusion"].split()], cfg["exclusiones"][0])
+            fabrica = room_cfg.unpack(fo.read_bytes())
+        ejemplo = json.loads((ROOT / "tools/sala_ejemplo.json").read_text(encoding="utf-8"))
+        self.assertEqual(fabrica, ejemplo)
+        bad = bytearray(room_cfg.pack(ejemplo))
+        bad[7] ^= 1
+        with self.assertRaises(room_cfg.ConfigError):
+            room_cfg.unpack(bytes(bad))
+        with self.assertRaises(room_cfg.ConfigError):
+            room_cfg.pack({**ejemplo, "altura_montaje": 1.0})
 
     def test_full_app_matches_python_end_to_end(self):
         sys.path.insert(0, str(ROOT / "ml"))

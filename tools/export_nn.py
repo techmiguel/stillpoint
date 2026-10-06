@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import math
 import sys
+import zlib
 from pathlib import Path
 
 import numpy as np
@@ -105,12 +106,14 @@ def flt(v: float) -> str:
 def main(art: Path, data: Path):
     meta = json.loads((art / "model_meta.json").read_text(encoding="utf-8"))
     it = interpreter(art / "model_int8.tflite")
+    model_hash = zlib.crc32((art / "model_int8.tflite").read_bytes())
     layers = layers_from(it)
     ii, oo = it.get_input_details()[0], it.get_output_details()[0]
     in_s, in_z = ii["quantization"]
     out_s, out_z = oo["quantization"]
     H = ["/* Generado por tools/export_nn.py. No editar. */", "#pragma once", "#include \"nn.h\"", "",
          f"#define NN_CONTRACT_HASH32 0x{meta['contract_hash32']:08X}u",
+         f"#define NN_MODEL_HASH32 0x{model_hash:08X}u  /* CRC32 de model_int8.tflite (ModelHash en Matter) */",
          f"#define NN_WINDOW {meta['window_frames']}", f"#define NN_N_IN {len(meta['used_feature_idx'])}",
          f"#define NN_N_CLASSES {len(meta['labels'])}", f"#define NN_N_LAYERS {len(layers)}",
          f"#define NN_IN_SCALE {in_s!r}", f"#define NN_IN_ZP {int(in_z)}",

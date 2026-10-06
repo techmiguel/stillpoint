@@ -19,6 +19,7 @@
 
 #include "app.h"
 #include "bgt60_frame.h"
+#include "cfg_store.h"
 #include "radar_pins.h"
 #include "radar_settings.h"          /* exportado desde Infineon Radar Fusion GUI (ver README) */
 #include "radar_settings_check.h"    /* falla la compilación si no coincide con RF_RADAR_CFG_V1 */
@@ -42,8 +43,27 @@ static rf_outputs_t s_out;
 
 /* Lo implementa matter_bridge.cpp: publica las salidas en el hilo de Matter. */
 extern void rf_matter_publish(const rf_outputs_t *out);
-/* Lo implementa diag_uart.c: registros del contrato por UART/USB (captura en F2-F4). */
+/* Lo implementa diag_uart.c: registros del contrato por UART/USB (captura en F2-F4)
+ * y comandos de configuración (tools/room_cfg.py). */
 extern void rf_diag_record(const uint8_t *rec, void *ctx);
+extern void rf_diag_poll(void);
+
+static volatile bool s_reconfig;
+
+/* Desde diag_uart.c, tras guardar una configuración nueva en NVM3. */
+void rf_radar_request_reconfig(void) { s_reconfig = true; }
+
+/* Reinicia la aplicación con la geometría guardada (se pierden las pistas en curso). */
+static void reconfigure(void)
+{
+    rf_room_t room;
+    rf_box_t zones[RF_APP_MAX_ZONES];
+    int nz;
+    rf_cfg_load(&room, zones, &nz);
+    if (rf_app_init(&s_app, &RF_RADAR_CFG_V1, &room, zones, nz) == 0) {
+        rf_app_set_record_cb(&s_app, rf_diag_record, NULL);
+    }
+}
 
 /* ---- ganchos de plataforma del driver -------------------------------------- */
 void xensiv_bgt60trxx_platform_rst_set(const void *iface, bool val)
@@ -109,6 +129,11 @@ static void radar_task(void *arg)
     (void)arg;
     uint32_t t_ms = 0;
     for (;;) {
+        rf_diag_poll();
+        if (s_reconfig) {
+            s_reconfig = false;
+            reconfigure();
+        }
         if (xSemaphoreTake(s_irq_sem, pdMS_TO_TICKS(500)) != pdTRUE) {
             /* sin tramas: fallo seguro, se publica «incierto» y se reinicia el radar */
             memset(&s_out, 0, sizeof(s_out));
