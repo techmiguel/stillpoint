@@ -9,9 +9,9 @@ la placa, como espera KiCad.
 
 | Modelo | Cotas (mm) | Fuente |
 |---|---|---|
-| BGT60TR13C | 6,5 x 5,0 x 0,9 | hoja de datos (PG-VF2BGA-40-1) |
-| MGM260P | 12,9 x 15,0 x 2,2 | 12,9 x 15,0 según la huella; altura aproximada, verificar con la hoja de datos |
-| GT-USB-7051x | 9,0 x 3,3 x 7,0 | contorno de la huella; altura aproximada (receptáculo vertical), verificar |
+| BGT60TR13C | 6,5 x 5,0 x 0,9 | hoja de datos (PG-VF2BGA-40-1: 0,858 ± 0,05) |
+| MGM260P | 12,9 x 15,0 x 2,35 | hoja de datos MGM260P rev 1.1, fig. 8.1 (A máx. 2,35) |
+| GT-USB-7051x | 9,0 x 3,3 x 7,5 | plano G-Switch GT-USB-7051A (7,50 sobre la placa) |
 | SiT8008 PQFN 2,5 x 2,0 | 2,5 x 2,0 x 0,85 | hoja de datos (máximo) |
 """
 import os
@@ -26,8 +26,8 @@ V = App.Vector
 MODELS = {
     # nombre: (x0, y0, x1, y1, altura) en coordenadas de la huella (y hacia abajo en KiCad -> se invierte)
     "BGT60TR13C_PG-VF2BGA-40-1": (-3.25, -2.5, 3.25, 2.5, 0.9),
-    "MGM260P_12.9x15mm": (-6.45, -7.5, 6.45, 7.5, 2.2),
-    "USB_C_Receptacle_G-Switch_GT-USB-7051x": (-4.5, -1.63, 4.5, 1.63, 7.0),
+    "MGM260P_12.9x15mm": (-6.45, -7.5, 6.45, 7.5, 2.35),
+    "USB_C_Receptacle_G-Switch_GT-USB-7051x": (-4.5, -1.63, 4.5, 1.63, 7.5),
     "Oscillator_SMD_SiT_PQFN-4Pin_2.5x2.0mm": (-1.25, -1.0, 1.25, 1.0, 0.85),
 }
 

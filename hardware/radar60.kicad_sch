@@ -5,6 +5,147 @@
 	(uuid "544589c5-c7ce-44b5-b5ae-1d336c726c76")
 	(paper "A2")
 	(lib_symbols
+(symbol "Device:R_Small"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 0.254)
+			(hide yes)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "R"
+			(at 0 0 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.016 1.016)
+				)
+			)
+		)
+		(property "Value" "R_Small"
+			(at 1.778 0 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor, small symbol"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "R resistor"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_fp_filters" "R_*"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "R_Small_0_1"
+			(rectangle
+				(start -0.762 1.778)
+				(end 0.762 -1.778)
+				(stroke
+					(width 0.2032)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "R_Small_1_1"
+			(pin passive line
+				(at 0 2.54 270)
+				(length 0.762)
+				(name ""
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -2.54 90)
+				(length 0.762)
+				(name ""
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
 		(symbol "Connector:USB_C_Receptacle_USB2.0_16P"
 			(pin_names
 				(offset 1.016)
@@ -9224,7 +9365,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "AP2112K-1.8"
+		(property "Value" "TPS7A2018PDBVR"
 			(at 187.96 42.545 0)
 			(effects
 				(font
@@ -9242,7 +9383,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.diodes.com/assets/Datasheets/AP2112.pdf"
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tps7a20.pdf"
 			(at 187.96 48.26 0)
 			(hide yes)
 			(effects
@@ -9640,14 +9781,14 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:FerriteBead_Small")
+		(lib_id "Device:R_Small")
 		(at 228.6 71.12 90)
 		(unit 1)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(uuid "2bc64bf7-7902-4374-9b0d-0af41e669a8b")
-		(property "Reference" "FB4"
+		(property "Reference" "R13"
 			(at 227.33 69.215 0)
 			(effects
 				(font
@@ -9656,7 +9797,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "600R@100MHz"
+		(property "Value" "47"
 			(at 229.87 69.215 0)
 			(effects
 				(font
@@ -9665,7 +9806,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Inductor_SMD:L_0603_1608Metric"
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 228.6 71.12 0)
 			(hide yes)
 			(effects
@@ -9683,7 +9824,7 @@
 				)
 			)
 		)
-		(property "Description" "Ferrite bead, small symbol"
+		(property "Description" "Resistor, small symbol"
 			(at 228.6 71.12 0)
 			(hide yes)
 			(effects
@@ -9695,7 +9836,7 @@
 		(instances
 			(project "radar60"
 				(path "/544589c5-c7ce-44b5-b5ae-1d336c726c76"
-					(reference "FB4")
+					(reference "R13")
 					(unit 1)
 				)
 			)
@@ -9837,7 +9978,7 @@
 				)
 			)
 		)
-		(property "Value" "SiT8008BI-12-18E-80.000000"
+		(property "Value" "KC2520K80.0000"
 			(at 261.366 150.622 0)
 			(effects
 				(font
@@ -9854,7 +9995,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.sitime.com/support/resource-library/datasheets/sit8008-datasheet"
+		(property "Datasheet" ""
 			(at 248.92 157.48 0)
 			(hide yes)
 			(effects
@@ -9897,7 +10038,7 @@
 				)
 			)
 		)
-		(property "Value" "22"
+		(property "Value" "150"
 			(at 271.78 157.48 90)
 			(effects
 				(font
@@ -9958,7 +10099,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "100n"
+		(property "Value" "1u"
 			(at 236.855 160.02 0)
 			(effects
 				(font
@@ -10507,7 +10648,7 @@
 				)
 			)
 		)
-		(property "Value" "MGM260PB32VNA"
+		(property "Value" "MGM260PB22VNA5"
 			(at 101.6 210.82 0)
 			(effects
 				(font
@@ -10994,7 +11135,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "1u"
+		(property "Value" "4.7u"
 			(at 432.435 45.72 0)
 			(effects
 				(font
@@ -11726,7 +11867,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "1u"
+		(property "Value" "10u"
 			(at 277.495 281.94 0)
 			(effects
 				(font
@@ -11788,7 +11929,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "100n"
+		(property "Value" "1u"
 			(at 285.115 281.94 0)
 			(effects
 				(font
@@ -11850,7 +11991,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "100n"
+		(property "Value" "1u"
 			(at 292.735 281.94 0)
 			(effects
 				(font
@@ -11974,7 +12115,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "1u"
+		(property "Value" "10u"
 			(at 307.975 281.94 0)
 			(effects
 				(font
@@ -12160,7 +12301,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "100n"
+		(property "Value" "10u"
 			(at 330.835 281.94 0)
 			(effects
 				(font
@@ -12222,7 +12363,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "100n"
+		(property "Value" "470n"
 			(at 338.455 281.94 0)
 			(effects
 				(font

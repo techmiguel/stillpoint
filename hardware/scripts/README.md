@@ -47,6 +47,9 @@ Partiendo del commit con la cara superior colocada (91f0ae8):
    huella de biblioteca) y la holgura de 0,4 mm a sus agujeros no metalizados.
 10. `revA_9_usb_islas.py`: USB_DP de J1 a U5 por B.Cu e islas de GND.
 11. `revA_6_serigrafia.py` y `revA_8_huellas.py` de nuevo, tras `modelos_3d.py`.
+12. `revA_10_hojas_de_datos.py`: cambios de la revisión con las hojas de datos
+    (valores, U4, Y1, U2, FB4 → R13), seguido de `revA_8_huellas.py` (pads del
+    BGA a Ø0,275) y `revA_7_acabado.py`. Detalle en `docs/09_hardware.md`.
 
 Freerouting no es determinista entre ejecuciones: los pasos 5 y 10 trabajan
 sobre coordenadas del resultado concreto que se obtuvo y no son reaplicables
@@ -62,6 +65,6 @@ subprocesos.
 
 `modelos_3d.py` (FreeCAD) genera envolventes en `hardware/lib/radar60.3dshapes`
 para lo que la biblioteca de KiCad no trae: BGT60TR13C, MGM260P, USB-C
-GT-USB-7051x y oscilador SiT PQFN. Las alturas del módulo (2,2 mm) y del USB-C
-(7,0 mm) son aproximadas y hay que confirmarlas con las hojas de datos; la
-comprobación mecánica deja margen (8,4 mm libres sobre la placa).
+GT-USB-7051x y oscilador 2520. Las alturas salen de las hojas de datos de
+`docs/referencias` (módulo 2,35 mm máx., USB-C 7,5 mm); la comprobación
+mecánica deja margen (8,4 mm libres sobre la placa).
