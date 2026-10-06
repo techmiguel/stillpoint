@@ -52,48 +52,55 @@ fija los requisitos que el esquema cumple y el estado del diseño.
 
 ## Estado de la PCB rev A
 
-Hecho (KiCad 10, `hardware/`): esquema con ERC sin errores, PCB sincronizada
-con el esquema, contorno circular de Ø 60 mm y colocación de la cara superior
-(MGM260P con la antena de 2,4 GHz hacia el borde, USB-C vertical, LDO, CP2102N,
-traductores de nivel, SWD, pulsadores y puntos de prueba).
+**Diseño terminado** (KiCad 10, `hardware/`): ERC sin errores, DRC sin errores
+ni conexiones pendientes y sin diferencias con el esquema. Solo quedan dos
+avisos: U7/U8 difieren de la biblioteca porque su marca de pin 1 se desplazó
+0,9 mm para que no la tapen C18/C20. Ficheros de fabricación y procedimiento en
+[hardware/scripts](../hardware/scripts/README.md).
 
-Pendiente, en este orden (requiere KiCad 10 con DRC; no se hace a mano sobre
-el fichero porque el BGA de 0,5 mm y la zona de 60 GHz no admiten errores
-sin verificación):
+![cara superior](img/pcb_revA_superior.png) ![cara inferior](img/pcb_revA_inferior.png)
 
-1. **Cara inferior**, mirando al suelo: U1 (BGT60TR13C) centrado en la ventana
-   del radomo según `mechanical/cad/comprobaciones.json`; Y1 (80 MHz) pegado a
-   OSC_CLK con R4 (22 Ω) en serie junto a Y1; desacoplos por bola
-   C5–C17 a ≤ 1 mm de cada bola; FB1–FB3 (de +1V8_RAD a los raíles RF, A y D)
-   y C22/C23 (desacoplo de 3,3 V en el lado del radar); R5/R6, polarizaciones
-   a 1,8 V de CS_N y DIO3 junto a U1; D1 (LED RGB) junto al borde, visible desde abajo. Hoy estos 24
-   componentes siguen fuera del contorno.
-2. **Apilado de 4 capas** con control de impedancia (L1 señal, L2 GND
-   continuo, L3 alimentación, L4 señal/radar) tomando del fabricante el
-   apilado que pida la nota de aplicación de Infineon. Nada de cobre, vías ni
-   serigrafía en el cono de ±60° delante de las antenas de U1, salvo lo que la
-   huella de referencia de Infineon prevea.
-3. **Fan-out del BGA**: vía en pad rellena y tapada (VIPPO) o perro-hueso
-   según el paso de 0,5 mm y las reglas del fabricante elegido; comprobar
-   antes el coste de VIPPO en JLCPCB/PCBWay.
-4. **Rutado**: OSC_CLK lo más corto posible y sin cruzar divisiones del plano;
-   SPI del radar (≤ 50 MHz) por L4 sobre GND continuo con la longitud
-   igualada de forma grosera; USB D+/D− como par diferencial de 90 Ω; raíles de
-   1,8 V del radar en estrella desde U4 a través de las ferritas.
-5. **Zonas**: GND en L2 sin cortes bajo U1 y bajo la antena del MGM260P (que
-   necesita además su zona de exclusión de cobre en todas las capas según la
-   hoja de datos del módulo); costura de vías de GND en el borde.
-6. **DRC** sin errores con las reglas del fabricante, revisión 3D contra
-   `mechanical/cad/carcasa.step` (altura libre 8,4 mm sobre la placa).
-7. **Fabricación**: Gerber, taladros, BOM y posiciones; verificar existencias
-   del BGT60TR13C y del MGM260P en el servicio de montaje.
+| Aspecto | Decisión |
+|---|---|
+| Apilado | 4 capas JLC04161H-7628, 1,6 mm: F.Cu señal · In1 GND entero (sin pistas) · In2 alimentaciones/señal con relleno de GND · B.Cu radar |
+| Radar U1 | cara inferior, centrado en la ventana del radomo (100, 100), fila de señales hacia los traductores; GND sólido en In2 bajo el encapsulado |
+| Fan-out del BGA | sin vía en pad: las bolas de señal y alimentación están en el anillo exterior; pistas de 0,15-0,25 mm; B3/B4/B8 unidas a su vecina de GND; vías de GND dentro del anillo solo donde la cara superior está libre |
+| Desacoplos del radar | cada bola de alimentación va directa a su condensador (≤ 3 mm), sin vía entre ambos; ferritas y bulk de cada raíl en la cara inferior |
+| Reloj 80 MHz | M2 → R4 (22 Ω) → Y1 entero en B.Cu: 6,3 mm |
+| SPI del radar | 13-17 mm por traza, vías escalonadas bajo U8 hacia los traductores |
+| USB (velocidad completa) | D+/D- de 0,2 mm; protector ESD U6 con vía de GND en su pad |
+| MGM260P | antena hacia el borde, sin cobre ni vías en ninguna capa bajo ella |
+| GND | rellenos en las 4 capas, ~490 vías de cosido y una vía junto a cada pad de GND, todas validadas con la DRC |
+| Mecánica | sin componentes sobre los apoyos de la carcasa; componente más alto 7,0 mm arriba (J1) y 1,19 mm abajo |
 
+Comprobaciones mecánicas con la placa montada (STEP exportado de KiCad, ver
+`mechanical/cad/comprobaciones.json`): interferencia placa-carcasa, placa-tapa
+y componentes en el cono de ±60° de las antenas: 0 mm³. Una clavija USB-C con
+funda de 12,4 × 6,6 mm colocada sobre el J1 real pasa por la tapa; el paso de
+cable se movió a la vertical de J1, a 16 mm del centro (con el paso centrado
+anterior la comprobación falla).
 
+**Pendiente antes de pedir la placa** (no se puede cerrar desde aquí):
+
+1. Contrastar la zona del radar con la guía de diseño de hardware de Infineon
+   para el BGT60TR13C (no disponible en este entorno): reglas de cobre bajo el
+   encapsulado, apilado recomendado y posición respecto al radomo. La placa
+   cumple las reglas generales (GND continuo debajo, nada en el cono), pero no
+   se ha verificado contra esa guía.
+2. Confirmar en las hojas de datos la altura del MGM260P (2,2 mm supuesto) y del
+   USB-C GT-USB-7051A (7,0 mm supuesto): son envolventes aproximadas.
+3. Elegir piezas en LCSC (columna `LCSC` de `bom.csv`), comprobar existencias
+   del BGT60TR13C y del MGM260P, y revisar las rotaciones del CPL en el visor
+   del fabricante. El montaje es a doble cara.
+4. Pedir solo tras cerrar F2: cualquier cambio de pines o alimentación que salga
+   de los kits se incorpora antes aquí.
+
+## Puntos de prueba (obligatorios)
 
 | TP | Señal | Para qué |
 |---|---|---|
 | TP1–TP3 | 5 V, 3,3 V, 1,8 V | puesta en marcha y medida de consumo |
-| TP4 | GND (×3, repartidos) | sondas |
+| TP4 | GND | sondas (más GND en el Tag-Connect J2) |
 | TP5–TP8 | SPI SCLK, MOSI, MISO, CS del radar | analizador lógico |
 | TP9 | IRQ del radar | latencia y temporización de trama |
 | TP10 | GPIO libre «trama procesada» | medir ciclos de DSP con osciloscopio |
@@ -101,7 +108,7 @@ sin verificación):
 
 ## Fabricación (JLCPCB / PCBWay)
 
-- Exportar con `kicad-manufacture`: Gerber, taladros, BOM y posiciones.
+- Exportar con `bash hardware/scripts/fabricacion.sh` (falla si el ERC o la DRC tienen errores): Gerber, taladros, BOM y posiciones en `hardware/fab/revA/`.
 - Pedir el apilado con control de impedancia que indique Infineon para la zona del radar.
 - Montaje del BGT60TR13C por el fabricante (BGA/eWLB fino): verificar disponibilidad
   en su catálogo de componentes antes del pedido; si no lo hay, consigna de piezas.

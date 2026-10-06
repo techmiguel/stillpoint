@@ -46,7 +46,7 @@ estas piezas cierra su puerta: las puertas exigen medidas reales.
 |---|---|---|---|
 | F1 | `ml/capture_kit.py` (captura con el SDK de Infineon y conversión idéntica a la del firmware), `bench/` (anotación, eventos, exportación de Home Assistant, informe con IC) | `ml/tests/test_bench.py`, demo con datos sintéticos en `docs/img/informe_demo` | capturas en 2 salas propias |
 | F2 | Firmware C completo (DSP, seguimiento, int8, decisión, aplicación) idéntico a Python; puerto EFR32MG26 (driver, Matter con clúster de fabricante, diagnóstico COBS) | equivalencia C↔Python de punta a punta con gcc y clang, ASan/UBSan; el puerto, solo comprobación sintáctica contra cabeceras simuladas del SDK | compilar con el Simplicity SDK, medir ciclos y RAM, 7 días contra Aqara FP2 |
-| F4 | Esquema rev A (ERC limpio), PCB con contorno y cara superior; carcasa, tapa, radomo λ/2 y cupón en FreeCAD con comprobaciones de interferencia | ERC de KiCad; aserciones de `mechanical/freecad_carcasa.py` | cara inferior, rutado y DRC ([09](09_hardware.md#estado-de-la-pcb-rev-a)); pedido tras cerrar F2 |
+| F4 | Esquema rev A y PCB de 4 capas colocada y rutada, con ficheros de fabricación; carcasa, tapa, radomo λ/2 y cupón en FreeCAD | ERC y DRC de KiCad sin errores y sin diferencias esquema-placa; aserciones de `mechanical/freecad_carcasa.py` con la placa montada real | contrastar con la guía de Infineon, elegir piezas LCSC y pedir tras cerrar F2 ([09](09_hardware.md#estado-de-la-pcb-rev-a)) |
 
 La integración continua (`.github/workflows/ci.yml`) ejecuta las pruebas
 del firmware con gcc y clang y la equivalencia con sanitizadores en cada push.
