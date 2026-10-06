@@ -92,6 +92,36 @@ class FirmwareCoreTest(unittest.TestCase):
             out = list(diag_reader.records([fo.read_bytes()]))
         self.assertEqual(out, [])   # el segundo blob no son registros: se descartan, no se inventan
 
+    def test_room_config_python_and_c_agree(self):
+        """La trama de tools/room_cfg.py la entiende el firmware y el bloque de fábrica del
+        firmware lo entiende la herramienta; ambos coinciden con tools/sala_ejemplo.json."""
+        import json
+        import tempfile
+        import room_cfg
+        exe = build_host.build("test_room_cfg")
+        r = subprocess.run([str(exe)], capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stdout)
+        cfg = json.loads((ROOT / "tools/sala_ejemplo.json").read_text(encoding="utf-8"))
+        cfg["exclusiones"] = [[-0.5, 0.25, 1.0, 1.75]]
+        with tempfile.TemporaryDirectory() as d:
+            fi, fo = Path(d) / "trama.bin", Path(d) / "fabrica.bin"
+            fi.write_bytes(room_cfg.command(cfg))
+            r = subprocess.run([str(exe), str(fi), str(fo)], capture_output=True, text=True)
+            self.assertEqual(r.returncode, 0, r.stdout)
+            lines = dict(l.split(" ", 1) for l in r.stdout.strip().splitlines())
+            self.assertEqual(lines["estado"], "0")
+            self.assertEqual([float(v) for v in lines["sala"].split()], cfg["sala"])
+            self.assertEqual([float(v) for v in lines["exclusion"].split()], cfg["exclusiones"][0])
+            fabrica = room_cfg.unpack(fo.read_bytes())
+        ejemplo = json.loads((ROOT / "tools/sala_ejemplo.json").read_text(encoding="utf-8"))
+        self.assertEqual(fabrica, ejemplo)
+        bad = bytearray(room_cfg.pack(ejemplo))
+        bad[7] ^= 1
+        with self.assertRaises(room_cfg.ConfigError):
+            room_cfg.unpack(bytes(bad))
+        with self.assertRaises(room_cfg.ConfigError):
+            room_cfg.pack({**ejemplo, "altura_montaje": 1.0})
+
     def test_full_app_matches_python_end_to_end(self):
         sys.path.insert(0, str(ROOT / "ml"))
         import compare_app

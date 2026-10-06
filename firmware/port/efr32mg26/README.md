@@ -16,7 +16,8 @@ discrepancias con las firmas reales. Se compila y prueba en la fase F2 con el ki
 | `radar_pins.h` | pines del radar | revisar con el kit / esquema |
 | `matter_bridge.cpp` | `rf_outputs_t` → atributos Matter (EP1–6 y clúster de fabricante, con `ContractVersion` y `ModelHash`), con límite de 2 informes/s salvo alarmas | sin compilar; los accesores `Radar60Presence::…` los genera ZAP a partir del XML |
 | `app_radar_init.cpp` | arranque desde `AppTask::AppInit` | sin compilar |
-| `diag_uart.c` | registros del contrato por UART con COBS (`tools/diag_reader.py`) | COBS probado en PC; comprobación sintáctica |
+| `diag_uart.c` | registros del contrato por UART con COBS (`tools/diag_reader.py`) y recepción de comandos (configuración de sala de `tools/room_cfg.py`, con confirmación) | COBS probado en PC; comprobación sintáctica |
+| `cfg_store.c` | configuración de la sala en NVM3 (formato v1 de `src/room_cfg.h`); sin una válida, la de fábrica | `room_cfg.c` probado en PC contra la herramienta Python; comprobación sintáctica |
 | `radar60_cluster.xml` | clúster de fabricante para ZAP | sin validar en ZAP |
 
 ## Pasos (F2)
@@ -25,7 +26,11 @@ discrepancias con las firmas reales. Se compila y prueba en la fase F2 con el ki
 2. Proyecto nuevo desde el ejemplo **Matter – SoC Occupancy Sensor (Thread)** para la
    placa del EFR32MG26.
 3. Componentes: `spidrv` (instancia `radar`, EUSART, 12 MHz para empezar),
-   `gpiointerrupt`, `sleeptimer`, `iostream_eusart` o `iostream_usart` para el diagnóstico.
+   `gpiointerrupt`, `sleeptimer`, `iostream_eusart` o `iostream_usart` para el
+   diagnóstico (3 Mbaud, lectura sin bloqueo) y `nvm3_default`. Comprobar que la
+   clave NVM3 de `cfg_store.c` (0x0F600) no cae en el rango reservado por Matter.
+   Potencia de Thread limitada a +10 dBm (balance de alimentación en
+   `docs/09_hardware.md`).
 4. Añadir al proyecto `firmware/src/*.c` (excepto pruebas), esta carpeta y la
    biblioteca `sensor-xensiv-bgt60trxx` de Infineon (Apache-2.0) sin su `*_mtb.c`.
 5. Exportar `radar_settings.h` desde **Infineon Radar Fusion GUI** con:

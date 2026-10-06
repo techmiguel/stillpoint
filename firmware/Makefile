@@ -12,8 +12,9 @@ DSP = src/rf_fft.c src/dsp.c src/tracker.c src/nn.c src/app.c
 test: all
 	./build/test_host
 	./build/test_nn
+	./build/test_room_cfg
 
-all: build/test_host build/test_nn build/replay build/replay_app build/test_bgt60 build/test_cobs
+all: build/test_host build/test_nn build/replay build/replay_app build/test_bgt60 build/test_cobs build/test_room_cfg
 
 build/test_host: tests/test_host.c $(CORE) include/features_v1.h tests/golden_v1.h tests/decision_vectors.h
 	mkdir -p build
@@ -32,6 +33,10 @@ build/replay_app: tests/replay_app.c $(CORE) $(DSP)
 build/test_bgt60: tests/test_bgt60.c src/bgt60_frame.c
 	mkdir -p build
 	$(CC) $(CFLAGS) -o $@ tests/test_bgt60.c src/bgt60_frame.c -lm
+
+build/test_room_cfg: tests/test_room_cfg.c src/room_cfg.c src/room_cfg.h src/features_pack.c src/cobs.c
+	mkdir -p build
+	$(CC) $(CFLAGS) -o $@ tests/test_room_cfg.c src/room_cfg.c src/features_pack.c src/cobs.c -lm
 
 build/test_cobs: tests/test_cobs.c src/cobs.c
 	mkdir -p build
