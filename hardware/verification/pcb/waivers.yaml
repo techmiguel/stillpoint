@@ -1,0 +1,5 @@
+# Una entrada por hallazgo aceptado, con su razón. Propuestas: revisarlas y poner el autor real en `by`.
+waivers:
+  - {check: PCB-ERC-001, key: c7df162db2, reason: "U8 pin 11 (2B1) a GND con PWR_FLAG en la red: banco 2 sin usar, TI exige llevar las entradas sin usar a GND (SN74AVC4T245, docs/09_hardware.md)", date: "2026-10-07", by: "propuesta (revisar)"}
+  - {check: PCB-ERC-001, key: ac7546d0d7, reason: "U8 pin 10 (2B2) a GND: mismo caso que 2B1", date: "2026-10-07", by: "propuesta (revisar)"}
+  - {check: PCB-MODEL-001, key: a132bcb0b8, reason: "J2 Tag-Connect TC2030-NL es solo pads: no hay cuerpo que modelar (el cable se conecta y se retira)", date: "2026-10-07", by: "propuesta (revisar)"}

@@ -1,0 +1,76 @@
+# Configuración de verificación de radar60 rev A (kicad-verify). Hereda los requisitos base
+# (`kicadverify requirements hardware`). Cada valor lleva su fuente; lo que no está confirmado lo dice.
+params:
+  fab:
+    dir: fab/revA
+    # JLCPCB no tiene perfil integrado de 4 capas. Este perfil hereda los límites del de 1-2 capas
+    # y sobrescribe los de multicapa. CONFIRMAR contra la página de capacidades o el DFM del pedido
+    # antes de poner confirmed: true; hasta entonces `requirements --lint` lo avisa.
+    profile:
+      base: jlcpcb-1-2-layer-standard
+      name: jlcpcb-4-layer-JLC04161H-7628
+      title: JLCPCB rígida FR-4, 4 capas, apilado JLC04161H-7628 1,6 mm (docs/09_hardware.md)
+      source:
+        kind: fab_capability
+        ref: JLCPCB PCB manufacturing capabilities, multilayer
+        url: https://jlcpcb.com/capabilities/pcb-capabilities
+        confirmed: false
+        note: >-
+          Valores de multicapa tomados de resúmenes secundarios (2026-10-07); la página de JLCPCB no
+          se pudo leer desde el entorno de verificación y las fuentes no coinciden entre sí. Confirmar
+          pista/separación mínimas, vía (taladro y diámetro) y anillo para 4 capas.
+      layers_max: 4
+      min_track_mm: 0.09
+      min_spacing_mm: 0.09
+      min_via_drill_mm: 0.2
+      min_via_diameter_mm: 0.45
+  # Ancho mínimo de pistas de alimentación. Corrientes de docs/09_hardware.md: pico < 0,3 A en 5 V,
+  # 273 mA en 3V3, 230 mA en 1V8 del radar. IPC-2221 (ΔT 10 °C): 0,15 mm en 1 oz exterior ≈ 0,6 A;
+  # en las capas internas (0,5 oz) las pistas de alimentación son de 0,25-0,3 mm (0,26-0,30 A).
+  # El fan-out del BGA usa 0,15-0,25 mm a propósito.
+  min_power_width_mm: 0.15
+
+requirements:
+  - id: PRJ-LAYERS-001
+    text: "Placa de 4 capas (In1 GND entero, In2 alimentación/señal con relleno de GND)"
+    source: {kind: design_intent, ref: "docs/09_hardware.md, Estado de la PCB rev A: apilado", file: docs/09_hardware.md}
+    check: {type: layer_count, equals: 4}
+  - id: PRJ-SIZE-001
+    text: "Placa redonda de Ø 60 mm (cabe en la carcasa)"
+    source: {kind: design_intent, ref: "docs/09_hardware.md, Requisitos del esquema: placa redonda Ø 60 mm", file: docs/09_hardware.md}
+    check: {type: board_size, max: [60.05, 60.05]}
+  - id: PRJ-FW-PWR-001
+    method: human
+    gate: release
+    text: "El firmware de la placa propia pone RADAR_PWR_EN (PC06, pin 29 de U2) en alto antes de inicializar el radar"
+    rationale: >-
+      U4 (TPS7A2018) está deshabilitado por R3 (100 kΩ a GND). Sin RADAR_PWR_EN no hay +1V8_RAD: ni el
+      radar, ni el lado B de U7/U8, ni Y1 tienen alimentación. En 7d4ae97, rf_radar_start()
+      (firmware/port/efr32mg26/radar_port.c) configura CS, RST e IRQ pero no PC06.
+    source: {kind: design_intent, ref: "Esquema rev A: U4 EN = RADAR_PWR_EN con R3 100 kΩ a GND", file: hardware/radar60.kicad_sch}
+  - id: PRJ-CLK-001
+    method: human
+    gate: fab
+    text: "La huella de Y1 coincide con la hoja del Kyocera KC2520K de 80 MHz y 1,8 V elegido (pads 1,1 × 1,0 a ±0,95 × ±0,75)"
+    rationale: "Y1 usa la huella del oscilador SiTime al que sustituyó (Oscillator_SMD_SiT_PQFN-4Pin_2.5x2.0mm); falta la hoja del KC2520K en docs/referencias"
+    source: {kind: design_intent, ref: "docs/09_hardware.md, Pendiente antes de pedir la placa, punto 2", file: docs/09_hardware.md}
+  - id: PRJ-ASM-001
+    method: human
+    gate: fab
+    text: "Cada pieza de la BOM tiene código LCSC, hay existencias del BGT60TR13C, MGM260P, TPS7A2018 y KC2520K, y las rotaciones del CPL se han revisado en el visor del fabricante (montaje a doble cara)"
+    source: {kind: design_intent, ref: "docs/09_hardware.md, Pendiente antes de pedir la placa, punto 1", file: docs/09_hardware.md}
+  - id: PRJ-F2-001
+    method: human
+    gate: fab
+    text: "La fase F2 está cerrada y sus cambios de pines, reloj o alimentación están incorporados en esta revisión"
+    source: {kind: design_intent, ref: "docs/09_hardware.md: no se pide a fábrica antes de cerrar F2", file: docs/09_hardware.md}
+  - id: PRJ-RF-001
+    method: human
+    gate: release
+    text: "La zona del radar sigue la guía de layout de Infineon para el BGT60TR13C (plano de GND bajo U1, nada metálico en el cono de ±60°, apilado con control de impedancia indicado por Infineon)"
+    source: {kind: datasheet, ref: "BGT60TR13C shield user manual (ug091722)", file: docs/referencias/infineon-ug091722-bgt60tr13c-shield-usermanual-en.pdf}
+
+disable:
+  - {id: ISO-SEP-001, reason: "Sin tensiones peligrosas: solo 5 V de USB", by: "propuesta (revisar)", date: "2026-10-07"}
+  - {id: PCB-HOLE-001, reason: "Sin agujeros de montaje: la placa se apoya en tres soportes de la carcasa a 0/120/240° (zonas apoyo_carcasa_*), comprobados en mechanical/cad/comprobaciones.json", by: "propuesta (revisar)", date: "2026-10-07"}
+  - {id: PCB-KEEPOUT-001, reason: "Comprueba arandelas de agujeros de montaje y no hay; las zonas de los apoyos las vigila la DRC (PCB-DRC-001)", by: "propuesta (revisar)", date: "2026-10-07"}

@@ -1,0 +1,6 @@
+# Huellas comprobadas contra su hoja de datos (una por línea, biblioteca:nombre).
+# Solo las que docs/09_hardware.md documenta como contrastadas; el resto queda pendiente
+# (PCB-FOOT-001 lo lista) hasta que alguien las compruebe y las añada aquí.
+radar60:Infineon_PG-VF2BGA-40-1_6.5x5mm_P0.5mm      # shield ug091722 fig. 5c: patrón y orientación, pads Ø0,275
+radar60:SiliconLabs_MGM260P_12.9x15mm                # MGM260P rev 1.1 fig. 8.2: columnas a 11,30, pads 2,4 × 0,6, zona de antena 8,8 × 4,8
+Connector_USB:USB_C_Receptacle_G-Switch_GT-USB-7051x # plano GT-USB-7051A: patrón y altura 7,5 mm

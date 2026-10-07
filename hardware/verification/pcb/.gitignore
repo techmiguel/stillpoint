@@ -1,0 +1,5 @@
+reports/
+review/
+interface/
+state.json
+# release/ is kept on purpose: the manifests are the record of what was released

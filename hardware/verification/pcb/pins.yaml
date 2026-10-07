@@ -1,0 +1,67 @@
+# Pines críticos copiados de las hojas de datos de docs/referencias (no del esquema).
+# La red esperada es la que corresponde a la función del pin en este diseño.
+
+# BGT60TR13C, hoja v2.4.9, tabla 1 (bolas) y tablas 2-3 (función y dominio).
+# VDDPLL (M4) y VDDVCO (M6) comparten el filtro de RF: decisión documentada en docs/09_hardware.md.
+U1:
+  A1: GND        # VSSD
+  A2: GND        # VSSD
+  K1: GND        # VSSA
+  A3: GND        # VSSRF (20 bolas: M7, M9, L9, K9, J9, H9, E9, D9, C9, B9, B8, A9, A8, A7, A6, A5, B4, A4, B3, A3)
+  A4: GND
+  A5: GND
+  A6: GND
+  A7: GND
+  A8: GND
+  A9: GND
+  B3: GND
+  B4: GND
+  B8: GND
+  B9: GND
+  C9: GND
+  D9: GND
+  E9: GND
+  H9: GND
+  J9: GND
+  K9: GND
+  L9: GND
+  M7: GND
+  M9: GND
+  H1: "+1V8_D"   # VDDD, 1,8 V
+  J1: "+1V8_A"   # VDDA, 1,8 V
+  M1: "+1V8_RF"  # VDDRF, 1,8 V
+  F9: "+1V8_RF"  # VDDRF
+  G9: "+1V8_RF"  # VDDRF
+  M4: "+1V8_RF"  # VDDPLL, 1,8 V
+  M6: "+1V8_RF"  # VDDVCO, 1,8 V
+  M3: "+3V3_LF"  # VDDLF, 3,3 V
+  L1: VAREF      # VAREF, salida de 1,2 V solo con condensador
+  M2: RAD_OSC    # OSC_CLK, 80 MHz
+  B1: RAD_CLK    # CLK (SPI)
+  C1: RAD_IRQ    # IRQ
+  D1: RAD_DI     # DI (SPI, del host)
+  E1: RAD_DO     # DO (SPI, al host)
+  F1: RAD_DIO3   # DIO3 = reset por hardware
+  G1: RAD_CS_N   # CS_N
+
+# MGM260P, hoja rev 1.1, tabla 6.1 (fila exterior; la interior 37-44 es opcional, §8.2 nota 9).
+U2:
+  1: GND
+  14: GND
+  23: GND
+  32: GND
+  34: GND
+  35: GND
+  36: GND
+  15: "+3V3"     # VDD
+  31: NRST       # RESETn (pull-up interno; solo se lleva a nivel bajo)
+
+# AP2112K-3.3 SOT-23-5 (hoja AP2112, "Pin Descriptions", columna SOT25).
+U3: {1: "+5V", 2: GND, 3: "+5V", 5: "+3V3"}       # 1 VIN, 2 GND, 3 EN (alto = activo), 5 VOUT
+
+# CP2102N QFN24, tabla 5.2 (alimentación sin regulador, fig. 2.3: VREGIN = VDD = VIO = 3,3 V).
+U5: {2: GND, 5: "+3V3", 6: "+3V3", 7: "+3V3", 8: USB_VBUS_SENSE, 3: USB_DP, 4: USB_DN}
+
+# SN74AVC4T245 TSSOP-16 (PW), tabla 4-1. U7: MCU -> radar (DIR alto, A->B). U8: radar -> MCU (DIR bajo, B->A).
+U7: {1: "+3V3", 16: "+1V8_D", 8: GND, 9: GND, 2: "+3V3", 3: "+3V3", 14: GND, 15: GND}
+U8: {1: "+3V3", 16: "+1V8_D", 8: GND, 9: GND, 2: GND, 3: GND, 14: GND, 15: GND, 10: GND, 11: GND}  # 2B1/2B2 sin usar a GND
