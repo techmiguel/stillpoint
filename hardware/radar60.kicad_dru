@@ -1,0 +1,7 @@
+(version 1)
+# Nothing but ground on the inner planes under the radar body (Infineon UG091722 §3.3:
+# solid ground right underneath the chip, no signal lines).
+(rule "radar_ground_only"
+  (layer inner)
+  (condition "A.intersectsCourtyard('U1') && A.NetName != '/GND'")
+  (constraint disallow track via))

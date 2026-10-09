@@ -1,0 +1,108 @@
+# Critical pins copied from the DATASHEET (not from the schematic). Prefix ~ means regex.
+# Rails that the rev A rework splits (RF/PLL/VCO, OSC, IO) use regexes so the
+# check survives the rename; the ball/pin number is what must not move.
+
+# Infineon BGT60TR13C, datasheet v2.4.6 Table 1 (PG-VF2BGA-40-1)
+U1:
+  B1: "~.*RAD_CLK"
+  C1: "~.*RAD_IRQ"
+  D1: "~.*RAD_DI"
+  E1: "~.*RAD_DO"
+  F1: "~.*RAD_DIO3"
+  G1: "~.*RAD_CS_N"
+  H1: "~.*1V8_D"
+  J1: "~.*1V8_A"
+  K1: GND
+  L1: "~.*VAREF"
+  M2: "~.*RAD_OSC"
+  M3: "~.*3V3_LF"
+  M4: "~.*1V8_(PLL|RF)"
+  M6: "~.*1V8_(VCO|RF)"
+  M1: "~.*1V8_RF"
+  F9: "~.*1V8_RF"
+  G9: "~.*1V8_RF"
+  A1: GND
+  A9: GND
+  M9: GND
+
+# Silicon Labs MGM260P, datasheet rev 1.1 Table 6.1 (pins 1-36)
+U2:
+  1: GND
+  14: GND
+  15: "+3V3"
+  23: GND
+  8: "~.*SWCLK"
+  9: "~.*SWDIO"
+  # Radar interface on the bottom pad row (EUSART1 routable to any port, Table 6.x);
+  # PD00/PD01 (pads 21/20) left free for an optional 32.768 kHz crystal.
+  16: "~.*SPI_SCLK"        # PA07
+  17: "~.*SPI_MOSI"        # PA08
+  18: "~.*RAD_RST_3V3"     # PD03
+  19: "~.*SPI_CS"          # PD02
+  22: "~.*SPI_MISO"        # PC00
+  24: "~.*RAD_IRQ_3V3"     # PC01
+  25: "~.*RAD_OE_N"        # PC02
+  26: "~.*RADAR_PWR_EN"    # PC03
+  12: "~.*VCOM_TX"         # PA05 (MCU RX)
+  13: "~.*VCOM_RX"         # PA06 (MCU TX)
+  3: "~.*BTN"              # PB03
+  31: "~.*NRST"
+  32: GND
+
+# Silicon Labs CP2102N QFN24, datasheet section 5.2
+U5:
+  2: GND
+  3: "~.*USB_DP"
+  4: "~.*USB_DN"
+  5: "+3V3"
+  6: "+3V3"
+  7: "+3V3"
+  8: "~.*USB_VBUS_SENSE"
+  9: "~.*CP_RST"
+  20: "~.*VCOM_TX"
+  21: "~.*VCOM_RX"
+
+# ST USBLC6-2SC6, datasheet functional diagram (1/6 I/O1, 2 GND, 3/4 I/O2, 5 VBUS)
+U6:
+  2: GND
+  5: "~.*VBUS"
+
+# G-Switch GT-USB-7051A (USB-C 16P)
+J1:
+  A1: GND
+  B12: GND
+  A4: "~.*VBUS"
+  B9: "~.*VBUS"
+  A5: "~.*CC1"
+  B5: "~.*CC2"
+  A6: "~.*USB_DP"
+  A7: "~.*USB_DN"
+
+# Yongyu SZYY1615RGB-B (LCSC C3029071 symbol/footprint): 1 R, 2 G, 3 B cathodes, 4 common anode
+D1:
+  1: "~.*LED_RK"
+  2: "~.*LED_GK"
+  3: "~.*LED_BK"
+  4: "+3V3"
+
+# TI TLV75733P WSON-6 (DRV): 1 OUT, 3 GND, 4 EN, 6 IN, 7 thermal pad
+U3:
+  1: "+3V3"
+  3: GND
+  4: "+5V"
+  6: "+5V"
+  7: GND
+
+# TI TPS7A2018 SOT-23-5 (DBV): 1 IN, 2 GND, 3 EN, 5 OUT
+U4:
+  1: "+3V3"
+  2: GND
+  3: "~.*RADAR_PWR_EN"
+  5: "~.*1V8_RAD"
+
+# Kyocera KC2016 XO: 1 ST, 2 GND, 3 OUT, 4 VCC
+Y1:
+  1: "~.*1V8_OSC"
+  2: GND
+  3: "~.*OSC_OUT"
+  4: "~.*1V8_OSC"

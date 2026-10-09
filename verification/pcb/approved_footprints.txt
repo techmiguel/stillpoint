@@ -1,0 +1,22 @@
+# Footprints checked against the manufacturer drawing (2026-10-08). One library ID per line.
+# Project footprints (hardware/lib/radar60.pretty)
+radar60:Infineon_PG-VF2BGA-40-1_6.5x5mm_P0.5mm     # BGT60TR13C ds v2.4.6 ball map + UG091722 fig. 5c (pads 0.275 mm)
+radar60:SiliconLabs_MGM260P_12.9x15mm               # MGM260P ds rev 1.1 fig. 8.2 (V1 12.9, C 11.3, e 1.0, X1 2.4, Y1 0.6, keep-out K1 8.8 x K2 4.8)
+radar60:USB_C_Receptacle_G-Switch_GT-USB-7051A      # G-Switch drawing 2019-05-29 recommended layout (holes +-2.4/+-2.15, slots +-3.75, pitch 0.79)
+radar60:LED_RGB_1615_SZYY1615RGB-B                  # LCSC pattern LED-SMD_4P-L1.6-W1.5-TR-1 (C3029071): 0.65 pads at +-0.425/+-0.625
+# KiCad library
+Package_SON:WSON-6-1EP_2x2mm_P0.65mm_EP1x1.6mm      # TI TLV757P DRV (WSON-6 2x2, 0.65 pitch, EP 1.0 x 1.6)
+Package_TO_SOT_SMD:SOT-23-5                         # TI TPS7A20 DBV
+Package_TO_SOT_SMD:SOT-23-6                         # ST USBLC6-2SC6
+Package_SO:TSSOP-16_4.4x5mm_P0.65mm                 # TI SN74AVC4T245 PW
+Package_DFN_QFN:QFN-24-1EP_4x4mm_P0.5mm_EP2.6x2.6mm # CP2102N QFN24 ds §7.2 (C 3.90 vs 3.875, EP 2.55 max vs 2.6: within tolerance)
+Crystal:Crystal_SMD_2016-4Pin_2.0x1.6mm             # Kyocera KC2016 (2.0 x 1.6, 4 pads)
+Button_Switch_SMD:SW_SPST_TL3342                    # E-Switch TL3342 (KiCad footprint made for this part)
+Connector:Tag-Connect_TC2030-IDC-NL_2x03_P1.27mm_Vertical   # Tag-Connect TC2030-NL (pads only, cable footprint)
+Capacitor_SMD:C_0402_1005Metric
+Capacitor_SMD:C_0805_2012Metric
+Resistor_SMD:R_0402_1005Metric
+Inductor_SMD:L_0603_1608Metric                      # Murata BLM18 (0603)
+Fuse:Fuse_1206_3216Metric                           # PTTC SMD1206P075TFT
+TestPoint:TestPoint_Pad_D1.0mm
+Fiducial:Fiducial_1mm_Mask2mm

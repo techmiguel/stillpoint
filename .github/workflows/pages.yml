@@ -1,0 +1,46 @@
+name: pages
+
+# Publishes docs/share/radar60.html as https://techmiguel.github.io/radar60/
+on:
+  push:
+    branches: [main]
+    paths: ["docs/share/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    # Pages on the free plan needs a public repository.
+    if: ${{ !github.event.repository.private }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the site
+        run: |
+          mkdir -p _site
+          # radar60.html is a fragment (head + body): wrap it in a full
+          # document with the Open Graph tags from head.html.
+          { cat docs/share/head.html
+            sed -n '1,/<\/style>/p' docs/share/radar60.html
+            echo '</head><body>'
+            sed '1,/<\/style>/d' docs/share/radar60.html
+            echo '</body></html>'; } > _site/index.html
+          cp docs/share/*.webp docs/share/og.jpg _site/
+          touch _site/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

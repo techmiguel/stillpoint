@@ -1,0 +1,3 @@
+name: "radar60"
+status: dev            # dev | release   (set by `kicadverify release`)
+reviewer_model: opus   # model alias or id passed to `claude --model`

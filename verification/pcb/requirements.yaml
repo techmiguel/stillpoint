@@ -1,0 +1,16 @@
+# Project requirements. Inherits kicad-verify's base requirements (see `kicadverify requirements`).
+params:
+  fab: {dir: hardware/fabrication, bom: hardware/fabrication/BOM_JLCPCB.csv, cpl: hardware/fabrication/CPL_JLCPCB.csv}
+  min_power_width_mm: 0.25
+  power_net_patterns: ['^/?[+]?1V8', '^/?[+]?3V3', '^/?VBUS$', '^/?[+]5V$']
+  net_voltages: {"/VBUS": 5.25, "/+5V": 5.25, "/+3V3": 3.3, "/+1V8_RAD": 1.8}
+requirements:
+  - {id: PRJ-001, method: model, text: "BGT60TR13C 1.8 V supply noise below 20 µVpp from 20 kHz to 700 kHz (low-noise LDO plus per-domain ferrite pi filters as in Infineon UG091722 fig. 6)"}
+  - {id: PRJ-002, method: model, text: "80 MHz radar reference: 1.8 V CMOS, phase jitter <= 1 ps over 12 kHz-20 MHz, own filtered supply and series resistor per UG091722 fig. 7"}
+  - {id: PRJ-003, method: model, text: "Radar I/O never exceeds 1.8 V: all MCU<->radar lines pass through SN74AVC4T245 with VCCB = 1.8 V; translator outputs disabled (OE high) until both rails are stable, RAD_CS_N held high while disabled"}
+  - {id: PRJ-004, method: model, text: "Total 3.3 V worst-case load (~0.41 A) within regulator rating with junction temperature below 125 °C at 40 °C ambient"}
+  - {id: PRJ-005, method: model, text: "USB-C sink: 5.1 k Rd on CC1 and CC2, ESD protection on D+/D-/VBUS, resettable fuse with hold current above worst-case load, VBUS capacitance below 10 µF"}
+  - {id: PRJ-006, method: model, text: "MGM260P built-in antenna: module at board edge with the copper keep-out of datasheet fig. 8.2 on all layers"}
+  - {id: PRJ-007, method: model, text: "Every BOM line has manufacturer MPN and LCSC number; capacitor voltage rating >= 2x rail where package allows"}
+  - {id: PRJ-008, method: model, text: "Test points: 5 V, 3.3 V, 1.8 V, 3x GND, SPI x4, IRQ, frame GPIO, UART TX/RX (docs/hardware.md)"}
+disable: []

@@ -1,0 +1,35 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  firmware:
+    name: C firmware (gcc and clang, -Werror)
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        cc: [gcc, clang]
+    steps:
+      - uses: actions/checkout@v4
+      - run: make -C firmware test CC=${{ matrix.cc }}
+
+  reference:
+    name: Python reference + C equivalence (ASan/UBSan)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: tests
+        working-directory: ml
+        run: python -m unittest discover -s tests -v
+      - name: C equivalence under sanitizers
+        working-directory: ml
+        env:
+          CC: gcc -fsanitize=address,undefined -fno-sanitize-recover=all -g
+        run: python -m unittest tests.test_firmware -v

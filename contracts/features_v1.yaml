@@ -1,0 +1,56 @@
+# Firmware <-> training feature contract, version 1.
+#
+# The key interface of the project (see docs/architecture.md).
+# Rules:
+#   - The firmware (C) and the reference (Python) produce EXACTLY these fields,
+#     in this order, with these units and this quantization.
+#   - Any change of order, unit, scale or meaning => new version
+#     (features_v2.yaml). A published version is never edited.
+#   - The contract hash (CRC-32 of the canonical form) travels in every record
+#     and in the model metadata; the firmware rejects a model with another hash.
+#   - Normalization (mean/std) is NOT part of the contract: it lives inside
+#     the model artifact.
+#   - After editing: python tools/gen_contract.py (regenerates the C headers).
+
+version: 1
+frame_rate_hz: 10          # one feature sample per track and frame
+window_frames: 20          # classifier window: 2.0 s
+window_hop_frames: 5       # the classifier runs at 2 Hz
+
+# Coordinates: origin on the floor under the sensor, z up (m).
+# Positive radial velocity = moving away from the sensor.
+fields:
+  - {name: x,              unit: m,   scale: 1000, desc: "track x position (filtered)"}
+  - {name: y,              unit: m,   scale: 1000, desc: "track y position (filtered)"}
+  - {name: z_centroid,     unit: m,   scale: 1000, desc: "power-weighted mean height of the body points"}
+  - {name: z_max,          unit: m,   scale: 1000, desc: "maximum height of the body points"}
+  - {name: z_min,          unit: m,   scale: 1000, desc: "minimum height of the body points"}
+  - {name: z_std,          unit: m,   scale: 1000, desc: "standard deviation of the point heights"}
+  - {name: xy_extent,      unit: m,   scale: 1000, desc: "horizontal extent (std. dev. along the major axis)"}
+  - {name: vx,             unit: m/s, scale: 1000, desc: "Kalman filter x velocity"}
+  - {name: vy,             unit: m/s, scale: 1000, desc: "Kalman filter y velocity"}
+  - {name: vz,             unit: m/s, scale: 1000, desc: "filtered derivative of z_centroid"}
+  - {name: vr_mean,        unit: m/s, scale: 1000, desc: "weighted mean radial velocity"}
+  - {name: vr_std,         unit: m/s, scale: 1000, desc: "radial velocity spread (micro-Doppler)"}
+  - {name: e_approach_db,  unit: dB,  scale: 100,  desc: "Doppler energy approaching"}
+  - {name: e_recede_db,    unit: dB,  scale: 100,  desc: "Doppler energy receding"}
+  - {name: n_points,       unit: "1", scale: 1,    desc: "number of detections associated in the frame"}
+  - {name: power_db,       unit: dB,  scale: 100,  desc: "total detection power"}
+  - {name: micro_db,       unit: dB,  scale: 100,  desc: "power in the 0.1-0.6 Hz breathing band"}
+  - {name: breath_hz,      unit: Hz,  scale: 1000, desc: "estimated breathing rate (0 if none)"}
+  - {name: breath_snr_db,  unit: dB,  scale: 100,  desc: "SNR of the breathing peak"}
+  - {name: range,          unit: m,   scale: 1000, desc: "sensor-to-track distance"}
+  - {name: state,          unit: enum, scale: 1,   desc: "0 tentative, 1 moving, 2 static, 3 occluded, 4 interferer"}
+  - {name: still_s,        unit: s,   scale: 10,   desc: "seconds since the last macro motion (saturates at 3276)"}
+  - {name: occluded,       unit: bool, scale: 1,   desc: "1 if another track blocks the line of sight"}
+  - {name: quality,        unit: "1", scale: 1000, desc: "track quality 0..1 (recent hits / expected)"}
+
+# Binary record (little-endian), 66 bytes:
+#   u16 magic = 0x5246 ('RF')   u8 version   u8 n_fields
+#   u32 frame_id                u32 t_ms
+#   u8  track_id                u8 flags     u16 contract_hash16
+#   i16 fields[n_fields]        u16 crc16-CCITT (over everything above)
+record:
+  magic: 0x5246
+  endianness: little
+  saturate: true   # out-of-range values saturate to int16, never wrap

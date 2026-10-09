@@ -1,0 +1,65 @@
+{
+ "WARNING": "SYNTHETIC dataset: validates the chain, not the product; never publish as a metric",
+ "n_train": 2630,
+ "n_val": 353,
+ "n_test": 557,
+ "test_subjects": [
+  "S09",
+  "S10",
+  "S11"
+ ],
+ "test_rooms": [
+  "R3"
+ ],
+ "macro_f1_excl_abstentions": 0.904,
+ "f1_per_class": {
+  "standing": 0.922,
+  "sitting": 0.78,
+  "lying": 0.958,
+  "fall": 0.955
+ },
+ "abstention_rate": 0.025,
+ "fall_window_recall": {
+  "k": 43,
+  "n": 46,
+  "p": 0.935,
+  "ci95": [
+   0.825,
+   0.978
+  ]
+ },
+ "int8_vs_float_agreement": 0.9964,
+ "confusion_matrix(rows=truth)": [
+  [
+   237,
+   4,
+   0,
+   0
+  ],
+  [
+   37,
+   80,
+   0,
+   0
+  ],
+  [
+   3,
+   9,
+   140,
+   1
+  ],
+  [
+   1,
+   0,
+   2,
+   43
+  ]
+ ],
+ "classes": [
+  "standing",
+  "sitting",
+  "lying",
+  "fall"
+ ],
+ "model_size_bytes": 15984
+}

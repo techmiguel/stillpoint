@@ -1,0 +1,2 @@
+# Written by `kicadverify signoff <ID> --by <name>`. A sign-off is valid only for the design hash it records.
+signoffs: []

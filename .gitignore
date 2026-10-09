@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+ml/data/
+firmware/build/
+# real recordings are never committed
+data_real/
+firmware/build/
+mechanical/stl/
+hardware/.history/
+hardware/*-backups/
+hardware/~*.lck
+hardware/fp-info-cache
+tools/pcb_build/build/
+*.FCBak
+# kicad-verify: local hook state and the interface regenerated on every run
+verification/pcb/state.json
+verification/pcb/interface/
