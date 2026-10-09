@@ -7,6 +7,8 @@ falls, using a 60 GHz radar instead of a camera.**
 [![License: CERN-OHL-S-2.0](https://img.shields.io/badge/license-CERN--OHL--S--2.0-blue)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/techmiguel/radar60?include_prereleases)](https://github.com/techmiguel/radar60/releases)
 
+**[Project page →](https://techmiguel.github.io/radar60/)**
+
 | Top (ceiling side) | Bottom (radar, faces the floor) |
 |---|---|
 | ![radar60 top](docs/img/board_iso.png) | ![radar60 bottom](docs/img/board_iso_bottom.png) |
