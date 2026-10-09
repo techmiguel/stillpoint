@@ -1,7 +1,7 @@
 # One entry per finding (the key is printed next to it), with reason, date and optional expiry.
 waivers:
   # - {check: PCB-DRC-001, key: ab12cd34ef, reason: "Antenna keep-out by design", date: "2026-10-06", expires: "2027-01-01"}
-  - {check: KH-LR-001, key: "schematic:validation_findings-628e971bd147", reason: "Heuristic false positive: D1 (common anode to +3V3) has R10/R11/R12 in series with each cathode through the labels LED_RK/LED_GK/LED_BK; see hardware/radar60.kicad_sch and docs/hardware.md", date: "2026-10-07", expires: "2027-01-01"}
+  - {check: KH-LR-001, key: "schematic:validation_findings-628e971bd147", reason: "Heuristic false positive: D1 (common anode to +3V3) has R10/R11/R12 in series with each cathode through the labels LED_RK/LED_GK/LED_BK; see hardware/stillpoint.kicad_sch and docs/hardware.md", date: "2026-10-07", expires: "2027-01-01"}
   - {check: FAB-DRILL-001, key: "d6cb7ab6ef", reason: "The 0.58 mm tool is the oval NPTH slot of J1 (1.0 x 0.58 mm, G-Switch drawing), exported as a routed slot; the check compares round holes only", date: "2026-10-08", expires: "2027-06-30"}
   - {check: PCB-MODEL-001, key: "a132bcb0b8", reason: "J2 is the Tag-Connect TC2030-NL pad pattern for the programming cable: nothing is mounted, so there is no body to model", date: "2026-10-08", expires: "2027-06-30"}
   - {check: FAB-BOM-001, key: "96f488f6bb", reason: "U2 MGM260PB32VNA5 is not stocked by LCSC/JLCPCB: Global Sourcing or consigned parts (docs/hardware.md)", date: "2026-10-08", expires: "2027-06-30"}
@@ -25,5 +25,5 @@ waivers:
   - {check: KH-DS-002, key: "schematic:DS-002:c1", reason: "Datasheets used for the pin and land-pattern checks are linked in docs/references.md (BGT60TR13C, UG091722, MGM260P, CP2102N, SN74AVC4T245, USBLC6, GT-USB-7051A)", date: "2026-10-08", expires: "2027-06-30"}
   - {check: KH-GR-004, key: "gerber:GR-004:fd64ed687f58", reason: "Bottom side: most copper flashes are radar BGA balls, test points and THT/via pads; the bottom paste layer has the expected openings for U1, U8, Y1, passives and D1", date: "2026-10-08", expires: "2027-06-30"}
   - {check: KH-TE-001, key: "pcb:TE-001:172aaa6cfcc2", reason: "Test points cover every rail, all three GNDs, the radar SPI/IRQ, the frame GPIO and the UART (docs/hardware.md); the rest is reachable through SWD and the console", date: "2026-10-08", expires: "2027-06-30"}
-  - {check: PCB-ERC-001, key: "c7df162db2", reason: "U8 2B1 tied to GND on purpose: with DIR = L the B side is an input and must not float (design_intent.md)", date: "2026-10-08", expires: "2027-06-30"}
-  - {check: PCB-ERC-001, key: "ac7546d0d7", reason: "U8 2B2 tied to GND on purpose: with DIR = L the B side is an input and must not float (design_intent.md)", date: "2026-10-08", expires: "2027-06-30"}
+  - {check: PCB-ERC-001, key: "4f7060fb7f", reason: "U8 2B1 tied to GND on purpose: with DIR = L the B side is an input and must not float (design_intent.md)", date: "2026-10-08", expires: "2027-06-30"}
+  - {check: PCB-ERC-001, key: "20f9458cc0", reason: "U8 2B2 tied to GND on purpose: with DIR = L the B side is an input and must not float (design_intent.md)", date: "2026-10-08", expires: "2027-06-30"}

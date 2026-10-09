@@ -6,8 +6,8 @@ signal of which device:
 
   # map.csv
   entity_id,device,signal
-  binary_sensor.radar60_occupancy,radar60,occupancy
-  binary_sensor.radar60_fall,radar60,fall
+  binary_sensor.stillpoint_occupancy,Stillpoint,occupancy
+  binary_sensor.stillpoint_fall,Stillpoint,fall
   binary_sensor.presence_sensor_fp2_presence_sensor_1,aqara_fp2,occupancy
 
   python bench/ha_export.py history.csv map.csv events.csv

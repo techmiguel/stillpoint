@@ -73,10 +73,10 @@ class BenchTest(unittest.TestCase):
                 w.writerow(["binary_sensor.fp2", "off", "2026-10-05T10:02:00+00:00"])
                 w.writerow(["sensor.other", "3", "2026-10-05T10:03:00Z"])
             with open(mp, "w", newline="") as f:
-                f.write("entity_id,device,signal\nbinary_sensor.r_occ,radar60,occupancy\n"
+                f.write("entity_id,device,signal\nbinary_sensor.r_occ,Stillpoint,occupancy\n"
                         "binary_sensor.fp2,aqara_fp2,occupancy\n")
             ev = ha_export.convert(h, mp)
-            self.assertEqual([(e.device, e.value) for e in ev], [("radar60", 1.0), ("aqara_fp2", 0.0)])
+            self.assertEqual([(e.device, e.value) for e in ev], [("Stillpoint", 1.0), ("aqara_fp2", 0.0)])
 
 
 if __name__ == "__main__":

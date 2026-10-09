@@ -1,17 +1,21 @@
-# radar60
+<p align="center">
+  <img src="docs/img/exploded.png" alt="Stillpoint exploded view: lid, board and enclosure with its radome" width="760">
+</p>
 
-**A privacy-first ceiling sensor that counts people, knows their posture and reports
-falls, using a 60 GHz radar instead of a camera.**
+<h1 align="center">Stillpoint</h1>
 
-[![tests](https://github.com/techmiguel/radar60/actions/workflows/ci.yml/badge.svg)](https://github.com/techmiguel/radar60/actions/workflows/ci.yml)
-[![License: CERN-OHL-S-2.0](https://img.shields.io/badge/license-CERN--OHL--S--2.0-blue)](LICENSE)
-[![Release](https://img.shields.io/github/v/release/techmiguel/radar60?include_prereleases)](https://github.com/techmiguel/radar60/releases)
+<p align="center">
+  <b>A privacy-first ceiling sensor that counts people, knows their posture and reports falls,<br>
+  using a 60 GHz radar instead of a camera.</b>
+</p>
 
-**[Project page →](https://techmiguel.github.io/radar60/)**
+<p align="center">
+  <a href="https://github.com/techmiguel/stillpoint/actions/workflows/ci.yml"><img src="https://github.com/techmiguel/stillpoint/actions/workflows/ci.yml/badge.svg" alt="tests"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-CERN--OHL--S--2.0-blue" alt="License: CERN-OHL-S-2.0"></a>
+  <a href="https://github.com/techmiguel/stillpoint/releases"><img src="https://img.shields.io/github/v/release/techmiguel/stillpoint?include_prereleases" alt="Release"></a>
+</p>
 
-| Top (ceiling side) | Bottom (radar, faces the floor) |
-|---|---|
-| ![radar60 top](docs/img/board_iso.png) | ![radar60 bottom](docs/img/board_iso_bottom.png) |
+<p align="center"><a href="https://techmiguel.github.io/stillpoint/"><b>Project page →</b></a></p>
 
 - **Sees the room, never the person.** No camera, no microphone. A 60 GHz FMCW radar
   (Infineon BGT60TR13C) measures where people are and how they move.
@@ -30,6 +34,10 @@ falls, using a 60 GHz radar instead of a camera.**
 
 ## The board
 
+| Top (ceiling side) | Bottom (radar, faces the floor) |
+|---|---|
+| ![Stillpoint board, top](docs/img/board_top.png) | ![Stillpoint board, bottom](docs/img/board_bottom.png) |
+
 | | |
 |---|---|
 | Size | Ø60 mm round, 4 layers, 1.6 mm, ENIG, JLCPCB standard process |
@@ -37,7 +45,6 @@ falls, using a 60 GHz radar instead of a camera.**
 | Radio + CPU | MGM260P module (Cortex-M33 + MVP accelerator, Matter/Thread/BLE) at the board edge with its antenna keep-out |
 | Power | USB-C, 3.3 V LDO, 7 µVrms 1.8 V LDO for the radar, one π filter per radar supply domain |
 | Extras | CP2102N USB console, RGB status LED, setup/reset buttons, Tag-Connect SWD, 14 test points |
-| Checks | ERC 0 errors, DRC 0, 0 unconnected, schematic/PCB parity, pin maps checked against datasheets, enclosure interference check against the real board STEP |
 
 Layout highlights:
 
@@ -50,13 +57,26 @@ Layout highlights:
 - **No crossing radar lines.** The radar signals leave the MCU from the pad row that faces
   the level translators, and the two translators are split over both faces to match the
   radar's ball order.
-- **Reproducible layout.** Placement and every critical route are Python scripts in
-  [`tools/pcb_build/`](tools/pcb_build); Freerouting does the rest.
 
 Fabrication files (Gerber, drill, BOM and CPL for JLCPCB, schematic PDF, STEP) are in
 [`hardware/fabrication/`](hardware/fabrication) and attached to the
-[rev A release](https://github.com/techmiguel/radar60/releases/tag/rev-a).
+[rev A release](https://github.com/techmiguel/stillpoint/releases/tag/rev-a).
 Full design notes: [docs/hardware.md](docs/hardware.md).
+
+## The enclosure
+
+A Ø65 mm, 24 mm tall ceiling puck on a Ø77 mm ceiling plate, 3D-printed in natural PETG.
+The bottom of the shell is the radome: a flat slab exactly half a wavelength thick inside
+the plastic (1.48 mm), so the 60 GHz signal passes through with about 0.15 dB of loss, and
+the radar's antennas sit one wavelength (4.95 mm) above it. The board rests on three supports and the lid clamps it
+with three posts at the same angles; the USB-C cable leaves through the lid, against the
+ceiling.
+
+The FreeCAD model ([`mechanical/enclosure.py`](mechanical/enclosure.py)) loads the real
+board STEP and checks that nothing touches the shell, the lid or the radome, and that no
+plastic sits in the antennas' ±60° field of view.
+
+![Enclosure section, radome transmission and parts](docs/img/mechanics.png)
 
 ## How it works
 
@@ -83,101 +103,6 @@ The fixes for the classic failures of commercial radar sensors are regression te
 The C firmware is checked frame by frame against the Python reference: same counts,
 ≥ 99.8 % identical quantized features, and identical postures, fall decisions and alarm
 times ([plot](docs/img/app_c_vs_python.png)).
-
-## Status
-
-| Part | Status |
-|---|---|
-| Requirements, acceptance criteria (fixed before any hardware), plan | ✅ [docs](docs) |
-| Python reference: FMCW simulator → DSP → tracking → features → int8 model → decision | ✅ [ml/radarref](ml/radarref) |
-| Portable C firmware (DSP, tracking, int8 inference, decision, application) | ✅ identical to the reference; gcc and clang `-Werror`, ASan/UBSan clean, CI |
-| EFR32MG26 port: radar driver hooks, Matter bridge, UART diagnostics, room config in NVM3 | ✅ written; ⏳ build with the Silicon Labs SDK on the kit |
-| Rev A board: schematic, routed 4-layer PCB, fabrication files | ✅ verified; ⏳ order after the kit phase |
-| Enclosure, lid, λ/2 radome and its coupon (FreeCAD) | ✅ checked against the board STEP; ⏳ print and pick the thickness with the kit |
-| Data capture tools and bench report with confidence intervals | ✅ [ml/capture_kit.py](ml/capture_kit.py), [bench](bench) |
-| Real-room data, 30-day bench, published metrics | ⏳ needs hardware and consenting volunteers |
-
-All numbers so far come from **simulation**: they show the chain works end to end, not
-how the product performs. They are not published as metrics.
-
-## Try it
-
-Python 3.10+:
-
-```bash
-pip install -r requirements.txt
-```
-
-Run every test (C is built with gcc, clang or `pip install ziglang`):
-
-```bash
-cd ml && python -m unittest discover -s tests -v
-```
-
-Firmware tests on the PC:
-
-```bash
-make -C firmware test
-```
-
-Scenario plots, synthetic dataset, training and event-level evaluation (from `ml/`):
-
-```bash
-python plot_scenarios.py
-```
-
-```bash
-python make_synth_dataset.py --jobs 4
-```
-
-```bash
-python train.py
-```
-
-```bash
-python eval_events.py
-```
-
-Fabrication files from the current board (KiCad 10):
-
-```bash
-python tools/export_fab.py
-```
-
-Room configuration for a device on a serial port (needs pyserial):
-
-```bash
-python tools/room_cfg.py tools/room_example.json --port COM7
-```
-
-## Repository
-
-```
-bench/            test bench: annotator, device events, Home Assistant export, report with CIs
-contracts/        feature contract between firmware and training (single source of truth)
-docs/             requirements, architecture, Matter model, hardware, plan, data protocol
-firmware/         portable C + tests against Python golden vectors; port/ = Silicon Labs layer
-hardware/         KiCad 10 schematic and board, custom libraries, fabrication/ (JLCPCB)
-mechanical/       enclosure, lid and radome (FreeCAD → STEP/STL), checked against the board
-ml/               reference chain, simulator, kit capture, training, metrics
-tools/            generators, UART diagnostic reader, room configuration, fabrication export
-tools/pcb_build/  board generation from the schematic (placement, critical routing)
-verification/     kicad-verify: requirements, datasheet pin maps, waivers
-```
-
-## Documentation
-
-| | |
-|---|---|
-| [Requirements](docs/requirements.md) | scope, guardrails, acceptance criteria and the kill criterion |
-| [Architecture](docs/architecture.md) | blocks, component choice, compute budget, interfaces, the feature contract |
-| [Hardware](docs/hardware.md) | stackup, radar layout, pin map, BOM, datasheet checks, power budget, bring-up |
-| [Matter](docs/matter.md) | endpoints and clusters |
-| [Regulatory](docs/regulatory.md) | 60 GHz limits in Europe and how the firmware enforces them |
-| [Plan and risks](docs/plan.md) | phase gates, what is done, known risks |
-| [Data protocol](docs/data-protocol.md) | recording, labelling, splits, consent form |
-| [Test bench](docs/test-bench.md) | scenarios and metrics with confidence intervals |
-| [References](docs/references.md) | datasheets and application notes |
 
 ## License
 

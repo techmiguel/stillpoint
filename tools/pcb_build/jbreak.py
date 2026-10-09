@@ -9,7 +9,7 @@ J1 rows:  north A1 A4 A5 A6 A7 A8 A9 A12 / south B12 B9 B8 B7 B6 B5 B4 B1 (0.79 
 - GND pins to the shield legs; CC1/CC2 to R1/R2."""
 import os
 import pcbnew
-PCB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "hardware", "radar60.kicad_pcb")
+PCB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "hardware", "stillpoint.kicad_pcb")
 mm = pcbnew.FromMM
 b = pcbnew.LoadBoard(PCB)
 F, B = pcbnew.F_Cu, pcbnew.B_Cu

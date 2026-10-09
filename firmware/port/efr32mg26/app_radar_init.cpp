@@ -18,13 +18,13 @@ void RadarInit()
     int n_zones;
     if (!rf_cfg_load(&room, zones, &n_zones))
     {
-        ChipLogProgress(AppServer, "radar60: no stored room configuration, using the factory one");
+        ChipLogProgress(AppServer, "stillpoint: no stored room configuration, using the factory one");
     }
     const int r = rf_radar_start(&room, zones, n_zones);
     if (r != 0)
     {
         // Fail safe: without the radar the device reports "uncertain" (EP6) and never
         // reports an empty room it has not measured.
-        ChipLogError(AppServer, "radar60: radar failed to start (%d)", r);
+        ChipLogError(AppServer, "stillpoint: radar failed to start (%d)", r);
     }
 }

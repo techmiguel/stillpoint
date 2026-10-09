@@ -2,7 +2,7 @@
 device events (prototype and a commercial reference).
 
   python bench/report.py --truth truth.csv --events events.csv \
-      --devices radar60 aqara_fp2 --out report/
+      --devices Stillpoint aqara_fp2 --out report/
 
 Writes report/report.md and report/report.png. Every metric carries its n and
 its 95 % confidence interval; with 0 events the upper bound is given.

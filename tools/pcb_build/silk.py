@@ -1,7 +1,7 @@
 """Silkscreen: small reference designators placed where they clear pads, vias and
 other text (hidden where nothing fits), test-point function labels, board legends."""
 import pcbnew, math, sys, os
-PCB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "hardware", "radar60.kicad_pcb")
+PCB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "hardware", "stillpoint.kicad_pcb")
 mm = pcbnew.FromMM
 b = pcbnew.LoadBoard(PCB)
 CX, CY, R = 100.0, 100.0, 30.0

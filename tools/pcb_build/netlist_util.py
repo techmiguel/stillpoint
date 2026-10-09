@@ -3,7 +3,7 @@ import os
 import pcbnew
 
 KICAD_FP = r"C:/Program Files/KiCad/10.0/share/kicad/footprints"
-PRJ_FP = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "hardware", "lib", "radar60.pretty")
+PRJ_FP = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "hardware", "lib", "stillpoint.pretty")
 
 
 def load_netlist(path):
@@ -30,7 +30,7 @@ def load_netlist(path):
 
 def fp_load(libid):
     lib, name = libid.split(':')
-    path = PRJ_FP if lib == 'radar60' else os.path.join(KICAD_FP, lib + '.pretty')
+    path = PRJ_FP if lib == 'stillpoint' else os.path.join(KICAD_FP, lib + '.pretty')
     fp = pcbnew.FootprintLoad(path, name)
     if fp is None:
         raise RuntimeError('footprint not found ' + libid)

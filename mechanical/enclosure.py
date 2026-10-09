@@ -3,7 +3,7 @@
 Run with the FreeCAD interpreter (no GUI):
   "C:\\Program Files\\FreeCAD 1.1\\bin\\freecadcmd.exe" -c "exec(open(r'mechanical/enclosure.py').read())"
 
-Outputs in mechanical/cad/: radar60.FCStd (editable document), enclosure, lid and
+Outputs in mechanical/cad/: stillpoint.FCStd (editable document), enclosure, lid and
 radome_coupon as .step and .stl, and checks.json. The checks are assertions:
 if a dimension fails, the script stops and exports nothing.
 """
@@ -39,12 +39,12 @@ H = Z_PCB + H_INNER                          # enclosure height
 LID_T, LID_EXTRA = 2.4, 6.0
 LIP_H, LIP_W = 4.0, 1.2
 CABLE = (14.0, 9.0)                          # opening for the vertical USB-C plug + boot
-# Board positions (hardware/radar60.kicad_pcb, board centre = origin;
+# Board positions (hardware/stillpoint.kicad_pcb, board centre = origin;
 # X as in KiCad, Y = -Y of KiCad): radar U1 at (100, 102.5) and USB-C J1 at (100, 119).
 RADAR_XY = (0.0, -2.5)
 USB_XY = (0.0, -19.0)
 SUPPORT_ANGLES = (30, 150, 270)              # part-free on both faces (SUPPORT_* zones on the board)
-BOARD_STEP = os.path.join(HERE, "..", "verification", "pcb", "interface", "radar60.step")
+BOARD_STEP = os.path.join(HERE, "..", "hardware", "fabrication", "stillpoint.step")
 SCREW_D, CSK_D = 4.2, 8.4
 FOV_DEG = 60.0                               # useful antenna half-angle
 
@@ -159,13 +159,13 @@ def export(doc, name, shape):
     obj = doc.addObject("Part::Feature", name)
     obj.Shape = shape
     Part.export([obj], os.path.join(OUT, name + ".step"))
-    m = MeshPart.meshFromShape(Shape=shape, LinearDeflection=0.05, AngularDeflection=0.2)
+    m = MeshPart.meshFromShape(Shape=shape, LinearDeflection=0.02, AngularDeflection=0.05)
     m.write(os.path.join(OUT, name + ".stl"))
     return obj
 
 
 def main():
-    doc = App.newDocument("radar60")
+    doc = App.newDocument("Stillpoint")
     c, t, k = enclosure(), lid(), radome_coupon()
     pcb, chip = board_and_radar()
     res = check(c, t, pcb, chip)
@@ -175,7 +175,7 @@ def main():
     for name, sh in (("board_reference", pcb), ("bgt60_reference", chip)):
         doc.addObject("Part::Feature", name).Shape = sh
     doc.recompute()
-    doc.saveAs(os.path.join(OUT, "radar60.FCStd"))
+    doc.saveAs(os.path.join(OUT, "stillpoint.FCStd"))
     res["volume_cm3"] = {"enclosure": round(c.Volume / 1000, 2), "lid": round(t.Volume / 1000, 2)}
     with open(os.path.join(OUT, "checks.json"), "w", encoding="utf-8") as f:
         json.dump(res, f, indent=1, ensure_ascii=False)

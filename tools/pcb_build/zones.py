@@ -1,11 +1,11 @@
-"""Zones, rule areas and stackup for radar60. Idempotent: removes zones it created."""
+"""Zones, rule areas and stackup for Stillpoint. Idempotent: removes zones it created."""
 import pcbnew, math, sys, os, re
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import importlib, placement
 importlib.reload(placement)
 RX, RY = placement.RX, placement.RY
-PCB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "hardware", "radar60.kicad_pcb")
+PCB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "hardware", "stillpoint.kicad_pcb")
 mm = pcbnew.FromMM
 b = pcbnew.LoadBoard(PCB)
 _old = list(b.Zones())

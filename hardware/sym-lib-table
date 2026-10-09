@@ -1,4 +1,4 @@
 (sym_lib_table
   (version 7)
 
-  (lib (name "radar60") (type "KiCad") (uri "${KIPRJMOD}/lib/radar60.kicad_sym") (options "") (descr "")))
+  (lib (name "stillpoint") (type "KiCad") (uri "${KIPRJMOD}/lib/stillpoint.kicad_sym") (options "") (descr "")))

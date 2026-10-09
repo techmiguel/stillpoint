@@ -2,7 +2,7 @@
 clears every other-net copper item. Locked, so routing passes keep them."""
 import pcbnew, math, sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-PCB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "hardware", "radar60.kicad_pcb")
+PCB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "hardware", "stillpoint.kicad_pcb")
 mm = pcbnew.FromMM
 b = pcbnew.LoadBoard(PCB)
 VD, VDR, W = 0.55, 0.3, 0.3

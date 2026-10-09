@@ -14,11 +14,11 @@ with the real signatures. Building and testing with the kit is phase F2.
 | `radar_port.c` | Infineon driver platform hooks (SPI, CS, RST, delay), FIFO interrupt, radar task | syntax-checked |
 | `radar_settings_check.h` | refuses to build with a `radar_settings.h` that differs from config v1 | not built |
 | `radar_pins.h` | rev A board pins (radar, LED, button, console) | matches `hardware/` and `verification/pcb/pins.yaml` |
-| `matter_bridge.cpp` | `rf_outputs_t` → Matter attributes (EP1–6 plus the manufacturer cluster with `ContractVersion` and `ModelHash`), at most 2 reports/s except alarms | not built; ZAP generates the `Radar60Presence::…` accessors from the XML |
+| `matter_bridge.cpp` | `rf_outputs_t` → Matter attributes (EP1–6 plus the manufacturer cluster with `ContractVersion` and `ModelHash`), at most 2 reports/s except alarms | not built; ZAP generates the `StillpointPresence::…` accessors from the XML |
 | `app_radar_init.cpp` | start-up from `AppTask::AppInit` | not built |
 | `diag_uart.c` | contract records over UART with COBS (`tools/diag_reader.py`) and command input (room configuration from `tools/room_cfg.py`, acknowledged) | COBS tested on PC; syntax-checked |
 | `cfg_store.c` | room configuration in NVM3 (v1 layout from `src/room_cfg.h`); factory default when none is valid | `room_cfg.c` tested on PC against the Python tool; syntax-checked |
-| `radar60_cluster.xml` | manufacturer cluster for ZAP | not validated in ZAP |
+| `stillpoint_cluster.xml` | manufacturer cluster for ZAP | not validated in ZAP |
 
 ## Steps (F2)
 
@@ -48,7 +48,7 @@ with the real signatures. Building and testing with the kit is phase F2.
    `radar_settings_check.h` fails the build if anything differs.
 6. ZAP: endpoints from [`docs/matter.md`](../../../docs/matter.md) (EP1 occupancy,
    EP2–4 zones, EP5 fall and EP6 uncertainty as Boolean State) and the
-   `radar60_cluster.xml` cluster.
+   `stillpoint_cluster.xml` cluster.
 7. Call `RadarInit()` at the end of `AppTask::AppInit()`.
 8. Measure on the kit: `rf_app_frame` cycles (TP10 GPIO + oscilloscope), free RAM,
    and compare the diagnostic stream with the reference on the same scenario

@@ -1,4 +1,4 @@
-"""Simple 3D models (dimensioned boxes) of the custom parts in hardware/lib/radar60.pretty.
+"""Simple 3D models (dimensioned boxes) of the custom parts in hardware/lib/stillpoint.pretty.
 
 Writes a coloured .wrl per part (KiCad 3D viewer) and, when run with the
 FreeCAD interpreter, the .step as well (the board STEP export: kicad-cli
@@ -13,7 +13,7 @@ the model): a footprint point (x, y) is (x, -y) here.
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__)) if "__file__" in globals() else os.path.join(os.getcwd(), "tools")
-OUT = os.path.join(HERE, "..", "hardware", "lib", "radar60.3dshapes")
+OUT = os.path.join(HERE, "..", "hardware", "lib", "stillpoint.3dshapes")
 os.makedirs(OUT, exist_ok=True)
 
 BLACK = (0.08, 0.08, 0.09)

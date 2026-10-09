@@ -4,7 +4,7 @@ Text ready to paste when publishing the board from heypcb's Share menu.
 
 ## Title
 
-radar60 — privacy-first 60 GHz presence & fall sensor (Matter over Thread)
+Stillpoint — privacy-first 60 GHz presence & fall sensor (Matter over Thread)
 
 ## Summary (card)
 
@@ -44,7 +44,7 @@ over Matter/Thread: no cloud, no account.
 
 **Open source**
 Schematic, PCB, enclosure (FreeCAD), firmware (C, tested against a Python reference) and the
-radar simulation/ML pipeline: https://github.com/techmiguel/radar60 (CERN-OHL-S-2.0).
+radar simulation/ML pipeline: https://github.com/techmiguel/stillpoint (CERN-OHL-S-2.0).
 
 ## Licence
 

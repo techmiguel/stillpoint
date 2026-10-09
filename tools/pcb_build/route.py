@@ -1,12 +1,12 @@
 """Autoroute with Freerouting: export DSN (without the outer GND pours), route, import SES."""
 import pcbnew, sys, os, subprocess, time
 HERE = os.path.dirname(os.path.abspath(__file__))
-PCB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "hardware", "radar60.kicad_pcb")
+PCB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "hardware", "stillpoint.kicad_pcb")
 import glob
 JAVA = os.environ.get("JAVA", "java")
 FR = os.environ.get("FREEROUTING_JAR", os.path.join(HERE, "freerouting-2.5.0.jar"))
-DSN = os.path.join(HERE, "build", "radar60.dsn")
-SES = os.path.join(HERE, "build", "radar60.ses")
+DSN = os.path.join(HERE, "build", "stillpoint.dsn")
+SES = os.path.join(HERE, "build", "stillpoint.ses")
 passes = sys.argv[1] if len(sys.argv) > 1 else "60"
 
 b = pcbnew.LoadBoard(PCB)

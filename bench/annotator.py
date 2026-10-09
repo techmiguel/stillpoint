@@ -51,7 +51,7 @@ class Session:
 def gui(s: Session):
     import tkinter as tk
     root = tk.Tk()
-    root.title("radar60 annotator")
+    root.title("Stillpoint annotator")
     tk.Label(root, text=__doc__.split("Keys:")[1], justify="left", font=("Consolas", 11)).pack(padx=12, pady=6)
     log = tk.Listbox(root, width=60, height=14, font=("Consolas", 10))
     log.pack(padx=12, pady=6)

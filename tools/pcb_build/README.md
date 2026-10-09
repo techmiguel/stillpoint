@@ -1,6 +1,6 @@
 # tools/pcb_build
 
-Scripts that build `hardware/radar60.kicad_pcb` from the schematic. The board is not
+Scripts that build `hardware/stillpoint.kicad_pcb` from the schematic. The board is not
 drawn by hand: placement and every critical route are written down here, so they can be
 reviewed and repeated.
 

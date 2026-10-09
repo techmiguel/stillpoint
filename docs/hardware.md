@@ -8,7 +8,7 @@ it is. The sources are in [`hardware/`](../hardware) and the fabrication files i
 
 | Top (ceiling side) | Bottom (faces the floor) |
 |---|---|
-| ![top](img/board_iso.png) | ![bottom](img/board_iso_bottom.png) |
+| ![top](img/board_top.png) | ![bottom](img/board_bottom.png) |
 
 The board was designed ahead of phases F1–F2 so it is ready when the kits have validated
 the architecture. **It is not ordered before F2 closes**: any pin, clock or power change
@@ -62,7 +62,7 @@ currents never run along long tracks, and +3V3 reaches the radio module, which p
 - 0.275 mm pads per Infineon UG091722 fig. 5c. The ball map is a perimeter ring with an
   empty centre: 6 GND vias go there, and the L3 GND island plus the L2 GND plane form the
   solid "no signals under the chip" ground Infineon asks for. A custom DRC rule
-  (`radar_ground_only` in [`radar60.kicad_dru`](../hardware/radar60.kicad_dru)) keeps any
+  (`radar_ground_only` in [`stillpoint.kicad_dru`](../hardware/stillpoint.kicad_dru)) keeps any
   other net off the inner layers under the radar.
 - Fan-out in two staggered via rows north of row 1 (CLK, DI, DIO3, CS, VDDD, VDDA) and
   east of column M (LF, PLL, VCO); RF leaves north (M1) and south (F9+G9). VAREF has its
@@ -224,7 +224,7 @@ same package and pinout.
 - ERC: 0 errors. The 2 warnings are intended: U8's unused B-side inputs are tied to GND,
   as TI requires.
 - DRC: **0 violations of any severity**, 0 unconnected, 0 schematic/PCB parity issues of
-  any severity, with the rules in `radar60.kicad_pro` and `radar60.kicad_dru`.
+  any severity, with the rules in `stillpoint.kicad_pro` and `stillpoint.kicad_dru`.
 - The schematic is laid out by function, with block headings; [`tools/sch_tidy.py`](../tools/sch_tidy.py)
   keeps every pin label pointing away from its symbol and every reference and value clear
   of the labels.

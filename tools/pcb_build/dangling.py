@@ -1,6 +1,6 @@
 """Remove vias that KiCad's DRC reports as dangling (connected on one layer only)."""
 import pcbnew, json, subprocess, os, sys
-PCB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "hardware", "radar60.kicad_pcb")
+PCB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "hardware", "stillpoint.kicad_pcb")
 CLI = r"C:/Program Files/KiCad/10.0/bin/kicad-cli.exe"
 out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "build", "drc_dangling.json")
 gone = []

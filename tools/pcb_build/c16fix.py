@@ -2,7 +2,7 @@
 IRQ/DO lanes and the fan-out vias, so it is tied on B.Cu to the nearest ground via east of it."""
 import os
 import pcbnew
-PCB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "hardware", "radar60.kicad_pcb")
+PCB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "hardware", "stillpoint.kicad_pcb")
 mm = pcbnew.FromMM
 b = pcbnew.LoadBoard(PCB)
 c16 = [f for f in b.GetFootprints() if f.GetReference() == 'C16'][0]

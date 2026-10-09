@@ -1,4 +1,4 @@
-"""Rebuild radar60.kicad_pcb from the schematic netlist: footprints from the
+"""Rebuild stillpoint.kicad_pcb from the schematic netlist: footprints from the
 libraries, nets, placement (placement.py), board-only items. Routing is separate."""
 import pcbnew, sys, os, math
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -8,8 +8,8 @@ import importlib
 import placement
 importlib.reload(placement)
 
-PCB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "hardware", "radar60.kicad_pcb")
-NET = os.path.join(HERE, "build", "radar60.xml")
+PCB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "hardware", "stillpoint.kicad_pcb")
+NET = os.path.join(HERE, "build", "stillpoint.xml")
 mm = pcbnew.FromMM
 V = lambda x, y: pcbnew.VECTOR2I(mm(x), mm(y))
 
@@ -42,7 +42,7 @@ for ref, c in sorted(comps.items()):
     fp.SetValue(c['value'])
     fp.SetPath(pcbnew.KIID_PATH("/" + c['tstamp']))
     fp.SetSheetname("/")
-    fp.SetSheetfile("radar60.kicad_sch")
+    fp.SetSheetfile("stillpoint.kicad_sch")
     if c['datasheet'] and c['datasheet'] != '~':
         fp.SetField("Datasheet", c['datasheet'])
     if c['description']:

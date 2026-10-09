@@ -1,4 +1,4 @@
-"""Schematic readability pass for hardware/radar60.kicad_sch.
+"""Schematic readability pass for hardware/stillpoint.kicad_sch.
 
 The schematic connects pins through net labels placed on the pin ends. This script:
   * turns every pin label so its text runs away from the symbol body (no more labels
@@ -14,7 +14,7 @@ import math
 import re
 from pathlib import Path
 
-SCH = Path(__file__).resolve().parents[1] / "hardware" / "radar60.kicad_sch"
+SCH = Path(__file__).resolve().parents[1] / "hardware" / "stillpoint.kicad_sch"
 PASSIVES = ("Device:C", "Device:R", "Device:FerriteBead_Small")
 
 

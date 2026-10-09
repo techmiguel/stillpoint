@@ -2,7 +2,7 @@
 ended up connected on one layer only, refill. Silkscreen refs are done by silk.py."""
 import os
 import pcbnew
-PCB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "hardware", "radar60.kicad_pcb")
+PCB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "hardware", "stillpoint.kicad_pcb")
 mm = pcbnew.FromMM
 b = pcbnew.LoadBoard(PCB)
 for fp in b.GetFootprints():

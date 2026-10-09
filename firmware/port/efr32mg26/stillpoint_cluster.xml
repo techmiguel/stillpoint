@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!--
+  Stillpoint manufacturer cluster (docs/matter.md). Added to ZAP as a custom
+  XML. 0xFFF1 is the CSA test vendor ID: replace it with a real Vendor ID
+  before distributing.
+-->
+<configurator>
+  <domain name="CHIP"/>
+  <cluster manufacterCode="0xFFF1">
+    <domain>Measurement &amp; Sensing</domain>
+    <name>Stillpoint Presence</name>
+    <code>0xFFF1FC01</code>
+    <define>STILLPOINT_PRESENCE_CLUSTER</define>
+    <description>Details of the Stillpoint presence and fall sensor.</description>
+    <attribute side="server" code="0xFFF10000" define="PERSON_COUNT" type="int8u" min="0" max="16" writable="false" reportable="true" default="0">PersonCount</attribute>
+    <attribute side="server" code="0xFFF10001" define="FALL_STATE" type="enum8" min="0" max="3" writable="false" reportable="true" default="0">FallState</attribute>
+    <attribute side="server" code="0xFFF10002" define="UNCERTAIN" type="boolean" writable="false" reportable="true" default="0">Uncertain</attribute>
+    <attribute side="server" code="0xFFF10003" define="CONTRACT_VERSION" type="int8u" writable="false" default="1">ContractVersion</attribute>
+    <attribute side="server" code="0xFFF10004" define="MODEL_HASH" type="int32u" writable="false" default="0">ModelHash</attribute>
+    <attribute side="server" code="0xFFF10005" define="PROPOSED_EXCLUSIONS" type="int8u" writable="false" reportable="true" default="0">ProposedExclusions</attribute>
+  </cluster>
+</configurator>

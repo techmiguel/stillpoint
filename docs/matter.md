@@ -21,7 +21,7 @@ manufacturer cluster that the user may ignore.
 | 2–4 | Occupancy Sensor | Occupancy Sensing | `Occupancy` | occupancy per configured zone (e.g. bed, sofa, bathroom) |
 | 5 | Contact Sensor | Boolean State (0x0045) | `StateValue` + `StateChange` event | **fall** (confirmed **or** uncertain) |
 | 6 | Contact Sensor | Boolean State | `StateValue` | **uncertainty**: some output is "uncertain" |
-| 1 | — | manufacturer cluster 0xFFF1FC01 ([radar60_cluster.xml](../firmware/port/efr32mg26/radar60_cluster.xml)) | `PersonCount`, `FallState` (0 none, 1 suspected, 2 confirmed, 3 uncertain), `Uncertain`, `ProposedExclusions`, `ContractVersion`, `ModelHash` (model CRC32) | detail for advanced integrations |
+| 1 | — | manufacturer cluster 0xFFF1FC01 ([stillpoint_cluster.xml](../firmware/port/efr32mg26/stillpoint_cluster.xml)) | `PersonCount`, `FallState` (0 none, 1 suspected, 2 confirmed, 3 uncertain), `Uncertain`, `ProposedExclusions`, `ContractVersion`, `ModelHash` (model CRC32) | detail for advanced integrations |
 
 Notes:
 

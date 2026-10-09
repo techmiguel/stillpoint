@@ -1,4 +1,4 @@
-/* Pins of the rev A board (hardware/radar60.kicad_sch, U2 = MGM260P).
+/* Pins of the rev A board (hardware/stillpoint.kicad_sch, U2 = MGM260P).
  * On the development kit, adjust them to the wiring of the radar board. */
 #pragma once
 #include "em_gpio.h"

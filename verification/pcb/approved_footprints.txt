@@ -1,9 +1,9 @@
 # Footprints checked against the manufacturer drawing (2026-10-08). One library ID per line.
-# Project footprints (hardware/lib/radar60.pretty)
-radar60:Infineon_PG-VF2BGA-40-1_6.5x5mm_P0.5mm     # BGT60TR13C ds v2.4.6 ball map + UG091722 fig. 5c (pads 0.275 mm)
-radar60:SiliconLabs_MGM260P_12.9x15mm               # MGM260P ds rev 1.1 fig. 8.2 (V1 12.9, C 11.3, e 1.0, X1 2.4, Y1 0.6, keep-out K1 8.8 x K2 4.8)
-radar60:USB_C_Receptacle_G-Switch_GT-USB-7051A      # G-Switch drawing 2019-05-29 recommended layout (holes +-2.4/+-2.15, slots +-3.75, pitch 0.79)
-radar60:LED_RGB_1615_SZYY1615RGB-B                  # LCSC pattern LED-SMD_4P-L1.6-W1.5-TR-1 (C3029071): 0.65 pads at +-0.425/+-0.625
+# Project footprints (hardware/lib/stillpoint.pretty)
+stillpoint:Infineon_PG-VF2BGA-40-1_6.5x5mm_P0.5mm     # BGT60TR13C ds v2.4.6 ball map + UG091722 fig. 5c (pads 0.275 mm)
+stillpoint:SiliconLabs_MGM260P_12.9x15mm               # MGM260P ds rev 1.1 fig. 8.2 (V1 12.9, C 11.3, e 1.0, X1 2.4, Y1 0.6, keep-out K1 8.8 x K2 4.8)
+stillpoint:USB_C_Receptacle_G-Switch_GT-USB-7051A      # G-Switch drawing 2019-05-29 recommended layout (holes +-2.4/+-2.15, slots +-3.75, pitch 0.79)
+stillpoint:LED_RGB_1615_SZYY1615RGB-B                  # LCSC pattern LED-SMD_4P-L1.6-W1.5-TR-1 (C3029071): 0.65 pads at +-0.425/+-0.625
 # KiCad library
 Package_SON:WSON-6-1EP_2x2mm_P0.65mm_EP1x1.6mm      # TI TLV757P DRV (WSON-6 2x2, 0.65 pitch, EP 1.0 x 1.6)
 Package_TO_SOT_SMD:SOT-23-5                         # TI TPS7A20 DBV

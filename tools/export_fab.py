@@ -18,8 +18,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 HW = ROOT / "hardware"
-PCB = HW / "radar60.kicad_pcb"
-SCH = HW / "radar60.kicad_sch"
+PCB = HW / "stillpoint.kicad_pcb"
+SCH = HW / "stillpoint.kicad_sch"
 OUT = HW / "fabrication"
 CLI = r"C:\Program Files\KiCad\10.0\bin\kicad-cli.exe"
 NOT_ASSEMBLED = ("TP", "FID", "J2")      # test pads, fiducials, Tag-Connect cable footprint
@@ -45,12 +45,12 @@ def main():
     run("pcb", "export", "gerbers", "--layers", layers, "--subtract-soldermask", "-o", gerb, PCB)
     run("pcb", "export", "drill", "--format", "excellon", "--drill-origin", "absolute", "--excellon-units", "mm",
         "--excellon-separate-th", "--generate-map", "--map-format", "gerberx2", "-o", gerb, PCB)
-    with zipfile.ZipFile(OUT / "radar60_revA_gerber.zip", "w", zipfile.ZIP_DEFLATED) as z:
+    with zipfile.ZipFile(OUT / "stillpoint_revA_gerber.zip", "w", zipfile.ZIP_DEFLATED) as z:
         for f in sorted(gerb.iterdir()):
             z.write(f, f.name)
 
     # BOM (JLCPCB: Comment, Designator, Footprint, LCSC Part #) from the schematic netlist
-    net = OUT / "radar60.xml"
+    net = OUT / "stillpoint.xml"
     run("sch", "export", "netlist", "--format", "kicadxml", "-o", net, SCH)
     groups = OrderedDict()
     for c in ET.parse(net).getroot().find("components"):
@@ -88,8 +88,8 @@ def main():
                 w.writerow([r["Ref"], r["PosX"] + "mm", r["PosY"] + "mm",
                             "Top" if r["Side"].lower().startswith("top") else "Bottom", r["Rot"]])
 
-    run("sch", "export", "pdf", "-o", OUT / "radar60_schematic.pdf", SCH)
-    run("pcb", "export", "step", "--subst-models", "--force", "-o", OUT / "radar60.step", PCB)
+    run("sch", "export", "pdf", "-o", OUT / "stillpoint_schematic.pdf", SCH)
+    run("pcb", "export", "step", "--subst-models", "--force", "-o", OUT / "stillpoint.step", PCB)
     print("ok:", ", ".join(sorted(p.name for p in OUT.iterdir())))
 
 

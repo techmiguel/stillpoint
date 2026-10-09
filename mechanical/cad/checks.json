@@ -5,7 +5,7 @@
  "free_height_above_board_mm": 8.4,
  "lip_clearance_mm": 0.2,
  "radome_mm": 1.478,
- "board_step": "../verification/pcb/interface/radar60.step",
+ "board_step": "../hardware/fabrication/stillpoint.step",
  "board_vs_enclosure_interference_mm3": 0.0,
  "board_vs_lid_interference_mm3": 0.0,
  "tallest_part_above_board_mm": 7.5,
